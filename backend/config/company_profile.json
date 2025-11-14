@@ -1,0 +1,23 @@
+{
+  "company_name": "TechFlow AI",
+  "industry": "SaaS - AI Productivity Tools",
+  "description": "We build AI-powered productivity tools. We use AI extensively in our stack and products.",
+  "tech_stack": ["React", "Next.js", "Node.js", "Python", "FastAPI", "MongoDB", "AWS", "OpenAI API", "LangChain", "Vector Databases", "AI Agents"],
+  "team_structure": "Small full-stack team (3-5 people)",
+  "work_philosophy": "AI-first, MVP, rapid iteration, automate everything",
+  
+  "project_managers": [
+    {
+      "name": "Priyanshu Dash",
+      "slack_id": "U09SN27BXNZ",
+      "email": "dash.priyanshu2004@gmail.com",
+      "role": "Project Lead"
+    }
+  ],
+  
+  "task_constraints": {
+    "max_tasks": 6,
+    "max_hours_per_task": 8,
+    "prefer_parallel_work": true
+  }
+}
