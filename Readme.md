@@ -1,6 +1,13 @@
+This project is currently incomplete.
+
 # 🚀 Startup Agent
 
 AI-powered project coordination that transforms ideas into actionable plans with automatic team assignments and Slack notifications.
+
+---
+
+<img width="1025" height="592" alt="Screenshot 2025-11-19 154234" src="https://github.com/user-attachments/assets/f48117ea-e318-4edf-86f1-2f41763e48f1" />
+<img width="1918" height="956" alt="Screenshot 2025-11-19 154439" src="https://github.com/user-attachments/assets/8d3e42f2-2bb7-486d-9b1e-97980eff62bc" />
 
 ## 🎯 What It Does
 
