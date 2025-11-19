@@ -16,6 +16,13 @@ function App() {
   const [copied, setCopied] = useState(false);
   const [theme, setTheme] = useState('light');
 
+  // PM Controls state
+  const [pmControls, setPmControls] = useState({
+    priority: 'Medium',
+    deadline: '5 days',
+    requireApproval: false
+  });
+
   const exampleRequests = [
     "Build authentication system with OAuth2 and JWT",
     "Fix critical production bug affecting 15% of users",
@@ -50,7 +57,10 @@ function App() {
       const response = await fetch('http://localhost:8000/process-request', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user_request: userRequest })
+        body: JSON.stringify({
+          user_request: userRequest,
+          pm_controls: pmControls
+        })
       });
       
       const data = await response.json();
@@ -81,83 +91,140 @@ function App() {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const getTotalHours = () => {
-    if (!result?.decomposition?.tasks) return 0;
-    return result.decomposition.tasks.reduce((sum, task) => sum + (task.estimated_hours || 0), 0);
-  };
-
   // CSS classes based on theme
   const bgClass = theme === 'dark' ? 'app-dark' : 'app-light';
   const cardClass = theme === 'dark' ? 'card-dark' : 'card-light';
-  const textClass = theme === 'dark' ? 'text-light' : 'text-dark';
-  const textMutedClass = theme === 'dark' ? 'text-muted-dark' : 'text-muted-light';
 
   return (
     <div className={`app ${bgClass}`}>
+      {/* Navbar */}
       <Navbar theme={theme} setTheme={setTheme} />
 
-      <div className="container">
-        {!result && !loading && <Hero />}
+      <div className="main-layout">
+        {/* Left Sidebar */}
+        <Sidebar 
+          loading={loading} 
+          processingSteps={processingSteps} 
+          result={result} 
+          theme={theme} 
+          handleCopyResults={handleCopyResults} 
+          copied={copied} 
+        />
 
-        {result && <ResultsDisplay result={result} theme={theme} expandedTask={expandedTask} setExpandedTask={setExpandedTask} />}
+        {/* Main Workspace */}
+        <div className="main-workspace">
+          <div className="workspace-content">
+            {/* Hero only shows when no result and not loading */}
+            {!result && !loading && <Hero />}
 
-        <div className="content-grid">
-          {/* Main Content */}
-          <div className="main-content">
-            {/* Input Card */}
-            <div className={`input-card ${cardClass}`}>
-              <div className="card-header">
-                <h3>Create Project Plan</h3>
-                <p>Describe your project and let AI handle the orchestration</p>
+            {/* Project Input Section - ALWAYS AT TOP */}
+            <div className={`project-input-section ${cardClass}`}>
+              {/* Section Header */}
+              <div className="section-header">
+                <h2>Project Planning</h2>
+                <p>Describe your project requirements and let AI orchestrate the execution</p>
               </div>
 
-              <div className="card-body">
+              {/* Input Form */}
+              <div className="input-form">
                 <div className="form-group">
-                  <label>What needs to be done?</label>
+                  <label className="form-label">Project Description</label>
                   <textarea
                     value={userRequest}
                     onChange={(e) => setUserRequest(e.target.value)}
                     placeholder="E.g., Build a user authentication system with OAuth2, implement password reset flow, and add two-factor authentication..."
                     disabled={loading}
-                    rows={5}
+                    rows={6}
                     className="request-input"
                   />
                 </div>
 
-                {/* Example Chips */}
-                <div className="examples">
-                  <span>Try:</span>
-                  {exampleRequests.map((example, i) => (
-                    <button
-                      key={i}
-                      onClick={() => setUserRequest(example)}
-                      disabled={loading}
-                      className="example-chip"
-                    >
-                      {example.substring(0, 30)}...
-                    </button>
-                  ))}
+                {/* PM Controls */}
+                <div className="pm-controls-section">
+                  <h4 className="controls-title">Project Parameters</h4>
+                  <div className="controls-grid">
+                    <div className="control-item">
+                      <label className="control-label">Priority Level</label>
+                      <select
+                        value={pmControls.priority}
+                        onChange={(e) => setPmControls(prev => ({ ...prev, priority: e.target.value }))}
+                        disabled={loading}
+                        className="control-select"
+                      >
+                        <option value="Critical">🔥 Critical</option>
+                        <option value="High">⚡ High</option>
+                        <option value="Medium">📊 Medium</option>
+                        <option value="Low">🐌 Low</option>
+                      </select>
+                    </div>
+
+                    <div className="control-item">
+                      <label className="control-label">Timeline</label>
+                      <select
+                        value={pmControls.deadline}
+                        onChange={(e) => setPmControls(prev => ({ ...prev, deadline: e.target.value }))}
+                        disabled={loading}
+                        className="control-select"
+                      >
+                        <option value="1 day">1 day</option>
+                        <option value="3 days">3 days</option>
+                        <option value="5 days">5 days</option>
+                        <option value="1 week">1 week</option>
+                        <option value="2 weeks">2 weeks</option>
+                      </select>
+                    </div>
+
+                    <div className="control-item checkbox-item">
+                      <label className="checkbox-label">
+                        <input
+                          type="checkbox"
+                          checked={pmControls.requireApproval}
+                          onChange={(e) => setPmControls(prev => ({ ...prev, requireApproval: e.target.checked }))}
+                          disabled={loading}
+                        />
+                        <span>Require PM approval before assignments</span>
+                      </label>
+                    </div>
+                  </div>
                 </div>
 
-                <div className="form-actions">
-                  <div className="ai-indicator">
-                    <Sparkles className="ai-icon" />
-                    <span>AI-powered analysis in real-time</span>
+                {/* Example Templates */}
+                <div className="examples-section">
+                  <span className="examples-label">Quick Start Templates:</span>
+                  <div className="examples-grid">
+                    {exampleRequests.map((example, i) => (
+                      <button
+                        key={i}
+                        onClick={() => setUserRequest(example)}
+                        disabled={loading}
+                        className="example-template"
+                      >
+                        {example.substring(0, 35)}...
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Action Buttons */}
+                <div className="action-section">
+                  <div className="ai-status">
+                    <Sparkles className="ai-status-icon" />
+                    <span>AI-powered orchestration ready</span>
                   </div>
                   <button
                     onClick={handleSubmit}
                     disabled={loading || !userRequest.trim()}
-                    className="submit-button"
+                    className="generate-btn"
                   >
                     {loading ? (
                       <>
-                        <div className="spinner"></div>
-                        Processing
+                        <div className="loading-spinner"></div>
+                        Processing Request...
                       </>
                     ) : (
                       <>
-                        Generate Plan
-                        <Send className="send-icon" />
+                        Generate Project Plan
+                        <Send className="btn-icon" />
                       </>
                     )}
                   </button>
@@ -165,19 +232,29 @@ function App() {
               </div>
             </div>
 
-            {/* Error */}
+            {/* Results Display - BELOW Project Planning */}
+            {result && (
+              <div className="results-container">
+                <ResultsDisplay 
+                  result={result} 
+                  theme={theme} 
+                  expandedTask={expandedTask} 
+                  setExpandedTask={setExpandedTask} 
+                />
+              </div>
+            )}
+
+            {/* Error Display */}
             {error && (
-              <div className="error-card">
-                <Alert className="error-icon" />
-                <div>
-                  <h3>Unable to Process Request</h3>
+              <div className="error-notification">
+                <Alert className="error-notification-icon" />
+                <div className="error-content">
+                  <h3>Processing Error</h3>
                   <p>{error}</p>
                 </div>
               </div>
             )}
           </div>
-
-          <Sidebar loading={loading} processingSteps={processingSteps} result={result} theme={theme} handleCopyResults={handleCopyResults} copied={copied} />
         </div>
       </div>
     </div>
