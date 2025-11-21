@@ -1,5 +1,5 @@
 import Navigation from "@/components/Navigation";
-import Hero from "@/components/Hero";
+import HeroSection from "@/components/HeroSection";
 import Features from "@/components/Features";
 import HowItWorks from "@/components/HowItWorks";
 import Testimonials from "@/components/Testimonials";
@@ -11,7 +11,7 @@ const Home = () => {
   return (
     <div className="min-h-screen">
       <Navigation />
-      <Hero />
+      <HeroSection />
       <Features />
       <HowItWorks />
       <Testimonials />
