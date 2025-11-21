@@ -31,14 +31,19 @@ class TaskDecompositionAgent:
             "task_constraints": {"max_tasks": 6, "max_hours_per_task": 8}
         }
     
-    def get_clean_prompt(self, user_request: str) -> str:
+    def get_clean_prompt(self, user_request: str, context: dict = None) -> str:
         """Clean, focused prompt for task decomposition"""
         constraints = self.company_profile['task_constraints']
+        context = context or {}
+        
+        urgency_note = "URGENT PRIORITY" if context.get('urgency') else "Normal priority"
+        deadline_note = f"Deadline: {context.get('deadline')}" if context.get('deadline') != "None" else "No hard deadline"
         
         return f"""
 You are a project manager at a tech startup. Break this request into executable tasks.
 
 REQUEST: "{user_request}"
+STATUS: {urgency_note}, {deadline_note}
 
 CONTEXT:
 - Team: {self.company_profile['team_structure']}
@@ -58,11 +63,11 @@ Return ONLY JSON array with tasks containing:
 Skills to use: design, frontend, backend, copywriting, qa, devops, ai
 """
     
-    def decompose_request(self, user_request: str) -> dict:
+    def decompose_request(self, user_request: str, context: dict = None) -> dict:
         """Clean task decomposition with company context"""
         print(f"🔄 Decomposing: '{user_request}'")
         
-        prompt = self.get_clean_prompt(user_request)
+        prompt = self.get_clean_prompt(user_request, context)
         
         messages = [
             {"role": "system", "content": "You output only valid JSON. No explanations."},

@@ -1,70 +1,73 @@
- Run the Project
-Backend Setup
-bash
-cd backend
+# Welcome to your Lovable project
 
-# Create virtual environment
-python -m venv venv
-venv\Scripts\activate 
-# source venv/bin/activate  # Mac/Linux
+## Project info
 
-# Install dependencies
-pip install -r requirements.txt
+**URL**: https://lovable.dev/projects/832aa84a-fe3f-4c16-a7c2-d117cd0cc4eb
 
-# Set up environment variables
-# Add to .env file:
-# OPENROUTER_API_KEY=your_key_here
-# SLACK_BOT_TOKEN=xoxb-your_token_here
+## How can I edit this code?
 
-# Start backend server
-python app.py
-Frontend Setup
-bash
-cd frontend
+There are several ways of editing your application.
 
-# Install dependencies
-npm install
+**Use Lovable**
 
-# Start frontend
+Simply visit the [Lovable Project](https://lovable.dev/projects/832aa84a-fe3f-4c16-a7c2-d117cd0cc4eb) and start prompting.
+
+Changes made via Lovable will be committed automatically to this repo.
+
+**Use your preferred IDE**
+
+If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+
+The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+
+Follow these steps:
+
+```sh
+# Step 1: Clone the repository using the project's Git URL.
+git clone <YOUR_GIT_URL>
+
+# Step 2: Navigate to the project directory.
+cd <YOUR_PROJECT_NAME>
+
+# Step 3: Install the necessary dependencies.
+npm i
+
+# Step 4: Start the development server with auto-reloading and an instant preview.
 npm run dev
-🧪 Test Components
-Test Individual Agents
-bash
-cd backend
+```
 
-# Test task decomposition
-python -m agents.task_decomposer
+**Edit a file directly in GitHub**
 
-# Test team assignment
-python -m agents.assignment_engine
+- Navigate to the desired file(s).
+- Click the "Edit" button (pencil icon) at the top right of the file view.
+- Make your changes and commit the changes.
 
-# Test Slack connection
-python -m agents.slack_agent
-Test API Endpoints
-bash
-# Health check
-curl http://localhost:8000/health
+**Use GitHub Codespaces**
 
-# Process request
-curl -X POST "http://localhost:8000/process-request" \
-  -H "Content-Type: application/json" \
-  -d '{"user_request": "Build landing page for our product"}'
-🌐 Access the Application
-Frontend: http://localhost:3000
+- Navigate to the main page of your repository.
+- Click on the "Code" button (green button) near the top right.
+- Select the "Codespaces" tab.
+- Click on "New codespace" to launch a new Codespace environment.
+- Edit files directly within the Codespace and commit and push your changes once you're done.
 
-Backend API: http://localhost:8000
+## What technologies are used for this project?
 
-API Docs: http://localhost:8000/docs
+This project is built with:
 
-📁 Key Files
-backend/app.py - Main FastAPI server
+- Vite
+- TypeScript
+- React
+- shadcn-ui
+- Tailwind CSS
 
-backend/agents/ - AI agent modules
+## How can I deploy this project?
 
-backend/config/ - Team and project configuration
+Simply open [Lovable](https://lovable.dev/projects/832aa84a-fe3f-4c16-a7c2-d117cd0cc4eb) and click on Share -> Publish.
 
-frontend/src/App.jsx - React frontend
+## Can I connect a custom domain to my Lovable project?
 
-frontend/src/index.css - Styling
+Yes, you can!
 
-Server runs on port 8000, Frontend on port 3000 
+To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+
+Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)

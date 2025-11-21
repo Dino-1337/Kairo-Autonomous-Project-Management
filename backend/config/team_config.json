@@ -3,15 +3,37 @@
     "name": "Pravakar",
     "email": "priyanshudash1223@gmail.com",
     "role": "Project Manager & Full Stack",
-    "skills": ["project management", "copywriting", "content", "research", "frontend development", "backend development", "react", "javascript", "api", "qa", "devops", "ai"],
+    "skills": [
+      "project management",
+      "copywriting",
+      "content",
+      "research",
+      "frontend development",
+      "backend development",
+      "react",
+      "javascript",
+      "api",
+      "qa",
+      "devops",
+      "ai"
+    ],
     "slack_id": "U09SR30T58W",
     "weekly_capacity_hours": 40
   },
   {
     "name": "Ankit",
-    "email": "ankitmallinga@gmail.com", 
+    "email": "ankitmallinga@gmail.com",
     "role": "Backend Specialist",
-    "skills": ["backend development", "api", "database", "devops", "system architecture", "python", "nodejs", "ai"],
+    "skills": [
+      "backend development",
+      "api",
+      "database",
+      "devops",
+      "system architecture",
+      "python",
+      "nodejs",
+      "ai"
+    ],
     "slack_id": "U09SPLPARJ9",
     "weekly_capacity_hours": 40
   },
@@ -19,7 +41,16 @@
     "name": "Dino",
     "email": "dinox1337@gnail.com",
     "role": "UI/UX Designer & Frontend",
-    "skills": ["design", "ui/ux", "figma", "prototyping", "frontend development", "css", "react", "user research"],
+    "skills": [
+      "design",
+      "ui/ux",
+      "figma",
+      "prototyping",
+      "frontend development",
+      "css",
+      "react",
+      "user research"
+    ],
     "slack_id": "U09SWM35B7E",
     "weekly_capacity_hours": 40
   }

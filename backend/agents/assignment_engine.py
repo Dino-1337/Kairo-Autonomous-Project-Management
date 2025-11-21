@@ -29,23 +29,39 @@ class AssignmentEngine:
             print(f"❌ Failed to load team config: {e}")
             # Fallback to basic team
             return [
-                {"name": "Sarah", "skills": ["copywriting", "content"], "slack_id": "U123"},
-                {"name": "Rohit", "skills": ["design", "ui/ux"], "slack_id": "U124"},
-                {"name": "Alex", "skills": ["development", "web"], "slack_id": "U125"}
+                {"name": "Pravakar", "skills": ["project management", "frontend", "backend"], "slack_id": "U09SR30T58W"},
+                {"name": "Ankit", "skills": ["backend", "api", "database"], "slack_id": "U09SPLPARJ9"},
+                {"name": "Dino", "skills": ["design", "ui/ux", "frontend"], "slack_id": "U09SWM35B7E"}
             ]
     
-    def assign_tasks(self, tasks):
+    def assign_tasks(self, tasks, user_request: str = ""):
         """Assign all tasks to team members"""
         print(f"🎯 Starting task assignment for {len(tasks)} tasks...")
         
+        # Check for specific assignment instructions
+        specific_assignments = self.extract_specific_assignments(user_request) if user_request else {}
+        
         assignments = []
-        assignment_details = []
         
         # Sort tasks by ID to maintain dependency order
         sorted_tasks = sorted(tasks, key=lambda x: x['id'])
         
         for task in sorted_tasks:
-            assignee = self.find_best_assignee(task)
+            # Check if there's a specific assignment for this task
+            assignee = None
+            if specific_assignments:
+                for name in specific_assignments:
+                    # Simple keyword matching in task title
+                    if any(keyword in task['title'].lower() for keyword in specific_assignments[name]):
+                        # Find team member by name
+                        assignee = next((m for m in self.team_config if m['name'].lower() == name.lower()), None)
+                        if assignee:
+                            print(f"   🎯 Specific assignment: {task['title']} -> {assignee['name']}")
+                            break
+            
+            # If no specific assignment, use skill-based matching
+            if not assignee:
+                assignee = self.find_best_assignee(task)
             
             assignment_detail = {
                 'task_id': task['id'],
@@ -53,6 +69,7 @@ class AssignmentEngine:
                 'assignee': assignee['name'],
                 'assignee_slack_id': assignee.get('slack_id', ''),
                 'reason': f"Skill match for {task.get('skills_required', [])}",
+                'skills': task.get('skills_required', []),
                 'estimated_hours': task.get('estimated_hours', 0)
             }
             
@@ -64,6 +81,36 @@ class AssignmentEngine:
             'assignments': assignments,
             'total_tasks_assigned': len(assignments)
         }
+    
+    def extract_specific_assignments(self, user_request: str) -> dict:
+        """Extract specific assignment instructions from user request"""
+        # Simple keyword-based extraction
+        # Format: {"PersonName": ["keywords", "in", "request"]}
+        assignments = {}
+        
+        request_lower = user_request.lower()
+        
+        # Check for each team member
+        for member in self.team_config:
+            name = member['name']
+            name_lower = name.lower()
+            
+            # Look for patterns like "assign to X", "X should do", "give to X"
+            patterns = [
+                f"assign to {name_lower}",
+                f"assign it to {name_lower}",
+                f"{name_lower} should",
+                f"give to {name_lower}",
+                f"give it to {name_lower}",
+                f"for {name_lower}"
+            ]
+            
+            if any(pattern in request_lower for pattern in patterns):
+                # Extract keywords around the name for task matching
+                assignments[name] = [name_lower, "logo", "design", "ui", "frontend", "backend", "copy", "write"]
+                print(f"   🎯 Found specific assignment instruction for {name}")
+        
+        return assignments
     
     def find_best_assignee(self, task):
         """Find the best team member for a task based on skills"""
@@ -127,5 +174,5 @@ if __name__ == "__main__":
         }
     ]
     
-    result = engine.assign_tasks(sample_tasks)
+    result = engine.assign_tasks(sample_tasks, "Create a landing page and assign to Dino")
     print(f"\n🎯 Assignment Result: {json.dumps(result, indent=2)}")
