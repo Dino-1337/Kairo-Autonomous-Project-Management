@@ -10,7 +10,7 @@ class TaskDecompositionAgent:
     def __init__(self):
         self.llm_client = OpenRouterClient()
         self.company_profile = self.load_company_profile()
-        print("✅ Task Decomposition Agent initialized")
+        print(" Task Decomposition Agent initialized")
     
     def load_company_profile(self):
         """Load company profile from JSON file"""
@@ -19,7 +19,7 @@ class TaskDecompositionAgent:
             with open(profile_path, 'r') as f:
                 return json.load(f)
         except Exception as e:
-            print(f"❌ Failed to load company profile: {e}")
+            print(f" Failed to load company profile: {e}")
             return self.get_default_profile()
     
     def get_default_profile(self):
@@ -65,7 +65,7 @@ Skills to use: design, frontend, backend, copywriting, qa, devops, ai
     
     def decompose_request(self, user_request: str, context: dict = None) -> dict:
         """Clean task decomposition with company context"""
-        print(f"🔄 Decomposing: '{user_request}'")
+        print(f" Decomposing: '{user_request}'")
         
         prompt = self.get_clean_prompt(user_request, context)
         
@@ -97,7 +97,7 @@ Skills to use: design, frontend, backend, copywriting, qa, devops, ai
             # Apply constraints
             tasks = self.apply_constraints(tasks)
             
-            print(f"✅ Generated {len(tasks)} tasks")
+            print(f" Generated {len(tasks)} tasks")
             return {
                 "status": "success",
                 "tasks": tasks,
@@ -105,7 +105,7 @@ Skills to use: design, frontend, backend, copywriting, qa, devops, ai
             }
             
         except (json.JSONDecodeError, KeyError, IndexError) as e:
-            print(f"❌ JSON parse error: {e}")
+            print(f" JSON parse error: {e}")
             return self.get_fallback_response(user_request)
     
     def apply_constraints(self, tasks):
@@ -128,7 +128,7 @@ Skills to use: design, frontend, backend, copywriting, qa, devops, ai
     
     def get_fallback_response(self, user_request: str) -> dict:
         """Fallback response when LLM fails"""
-        print("⚠️  Using fallback task decomposition")
+        print("️  Using fallback task decomposition")
         
         # Simple fallback tasks for common request types
         fallback_tasks = [
@@ -167,7 +167,7 @@ Skills to use: design, frontend, backend, copywriting, qa, devops, ai
 
 # Test the refined decomposer
 if __name__ == "__main__":
-    print("🧪 Testing Refined Task Decomposition...")
+    print(" Testing Refined Task Decomposition...")
     agent = TaskDecompositionAgent()
     
     test_requests = [
@@ -184,4 +184,4 @@ if __name__ == "__main__":
             for task in result['tasks']:
                 print(f"  {task['id']}. {task['title']} ({task['estimated_hours']}h)")
         else:
-            print(f"  ❌ Failed: {result.get('message', 'Unknown error')}")
+            print(f"   Failed: {result.get('message', 'Unknown error')}")

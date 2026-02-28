@@ -66,7 +66,7 @@ const Navigation = () => {
                 >
                   FAQ
                 </button>
-                <Link to="/workspace">
+                <Link to="/projects">
                   <Button className="neu-button bg-primary text-primary-foreground hover:bg-primary/90">
                     Get Started
                   </Button>
@@ -109,7 +109,7 @@ const Navigation = () => {
                     >
                       FAQ
                     </button>
-                    <Link to="/workspace" className="mt-2">
+                    <Link to="/projects" className="mt-2">
                       <Button className="w-full neu-button bg-primary text-primary-foreground">
                         Get Started
                       </Button>

@@ -16,7 +16,7 @@ const HeroSection = () => {
           Type what you need — our AI breaks it down, assigns it, and notifies your team instantly.
         </p>
 
-        <Link to="/workspace">
+        <Link to="/projects">
           <Button
             size="lg"
             className="neu-button bg-primary text-primary-foreground hover:bg-primary/90 text-lg px-8 py-6 rounded-2xl"

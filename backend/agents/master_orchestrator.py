@@ -15,14 +15,14 @@ class MasterOrchestrator:
     
     def route_request(self, user_request: str) -> dict:
         """Route user requests to the appropriate workflow"""
-        print(f"🎯 Master Orchestrator received: '{user_request}'")
+        print(f" Master Orchestrator received: '{user_request}'")
         
         request_lower = user_request.lower()
         
         for workflow_name, config in self.workflows.items():
             for trigger in config["triggers"]:
                 if trigger in request_lower:
-                    print(f"✅ Matched workflow: {workflow_name}")
+                    print(f" Matched workflow: {workflow_name}")
                     return {
                         "workflow": workflow_name,
                         "next_agent": config["agent"],
@@ -31,7 +31,7 @@ class MasterOrchestrator:
                     }
         
         # Default fallback
-        print("🔀 No specific workflow matched - using default")
+        print(" No specific workflow matched - using default")
         return {
             "workflow": "general",
             "next_agent": "task_decomposer",
@@ -41,7 +41,7 @@ class MasterOrchestrator:
 
 # Test the orchestrator
 if __name__ == "__main__":
-    print("🧪 Testing Master Orchestrator...")
+    print(" Testing Master Orchestrator...")
     orchestrator = MasterOrchestrator()
     
     test_requests = [

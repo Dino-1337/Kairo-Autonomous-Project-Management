@@ -14,9 +14,9 @@ const Home = () => {
       <HeroSection />
       <Features />
       <HowItWorks />
-      <Testimonials />
+      {/* <Testimonials /> */}
       <Mission />
-      <FAQ />
+      {/* <FAQ /> */}
       <Footer />
     </div>
   );

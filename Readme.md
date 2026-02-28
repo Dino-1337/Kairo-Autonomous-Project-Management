@@ -17,6 +17,13 @@ This system acts as an intelligent layer between project requests and your team,
 - **💬 Slack Integration**: Instantly notifies the team via Slack when tasks are assigned.
 - **✨ Modern UI**: A beautiful, responsive interface built with React and Tailwind CSS for managing the workspace.
 
+## 🌟 New Features
+
+- **🔗 LangChain/LangGraph Orchestration**: Replaced manual HTTP clients with LangChain OpenRouter client and introduced a LangGraph StateGraph (`workflow_app`) for robust routing, task decomposition, and assignment.
+- **💾 Project Data Model & Persistence**: Added `SQLModel`-based database layer with fallback to SQLite for Projects, Ideas, Tasks, Meeting Notes, and Project Events, along with REST endpoints.
+- **📊 Project Dashboard UI**: Introduced a new `/projects` route and `ProjectsDashboard` page matching the glass/neumorphic style to create projects, add ideas, manage tasks, and view project timelines.
+- **🛠️ Developer Ergonomics**: Added `start.ps1` and `start.sh` scripts to easily spin up the frontend and backend together, and updated dependencies to include LangChain/LangGraph and database requirements.
+
 ## 🛠️ Tech Stack
 
 ### Frontend
