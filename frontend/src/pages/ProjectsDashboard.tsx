@@ -7,6 +7,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { ExternalLink, FolderOpen, Plus, Sparkles, Trash2 } from "lucide-react";
+import { useAuth } from "@clerk/clerk-react";
 
 type ProjectStatus = "active" | "paused" | "completed";
 
@@ -23,6 +24,7 @@ const API_BASE = "http://localhost:8000";
 
 const ProjectsDashboard = () => {
   const navigate = useNavigate();
+  const { getToken } = useAuth();
   const [projects, setProjects] = useState<Project[]>([]);
   const [isLoadingProjects, setIsLoadingProjects] = useState(false);
   const [isCreatingProject, setIsCreatingProject] = useState(false);
@@ -33,7 +35,10 @@ const ProjectsDashboard = () => {
     const loadProjects = async () => {
       setIsLoadingProjects(true);
       try {
-        const res = await fetch(`${API_BASE}/projects`);
+        const token = await getToken();
+        const res = await fetch(`${API_BASE}/projects`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
         if (!res.ok) throw new Error("Failed to load projects");
         const data: Project[] = await res.json();
         setProjects(data);
@@ -54,9 +59,13 @@ const ProjectsDashboard = () => {
     }
     setIsCreatingProject(true);
     try {
+      const token = await getToken();
       const res = await fetch(`${API_BASE}/projects`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
         body: JSON.stringify({
           name: newProjectName,
           description: newProjectDescription || null,

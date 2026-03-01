@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
+import { SignedIn, SignedOut, UserButton } from "@clerk/clerk-react";
 
 const Navigation = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -27,9 +28,8 @@ const Navigation = () => {
 
   return (
     <nav
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled ? "glass-card shadow-lg" : "bg-transparent"
-      }`}
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled ? "glass-card shadow-lg" : "bg-transparent"
+        }`}
     >
       <div className="container mx-auto px-6 py-4">
         <div className="flex items-center justify-between">
@@ -66,11 +66,16 @@ const Navigation = () => {
                 >
                   FAQ
                 </button>
-                <Link to="/projects">
-                  <Button className="neu-button bg-primary text-primary-foreground hover:bg-primary/90">
-                    Get Started
-                  </Button>
-                </Link>
+                <SignedIn>
+                  <UserButton afterSignOutUrl="/" />
+                </SignedIn>
+                <SignedOut>
+                  <Link to="/projects">
+                    <Button className="neu-button bg-primary text-primary-foreground hover:bg-primary/90">
+                      Get Started
+                    </Button>
+                  </Link>
+                </SignedOut>
               </div>
 
               {/* Mobile Menu Button */}
@@ -109,11 +114,18 @@ const Navigation = () => {
                     >
                       FAQ
                     </button>
-                    <Link to="/projects" className="mt-2">
-                      <Button className="w-full neu-button bg-primary text-primary-foreground">
-                        Get Started
-                      </Button>
-                    </Link>
+                    <div className="mt-2">
+                      <SignedIn>
+                        <UserButton afterSignOutUrl="/" />
+                      </SignedIn>
+                      <SignedOut>
+                        <Link to="/projects" className="w-full">
+                          <Button className="w-full neu-button bg-primary text-primary-foreground">
+                            Get Started
+                          </Button>
+                        </Link>
+                      </SignedOut>
+                    </div>
                   </div>
                 </div>
               )}

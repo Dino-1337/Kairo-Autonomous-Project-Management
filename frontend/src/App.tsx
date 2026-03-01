@@ -11,24 +11,50 @@ import Navigation from "./components/Navigation";
 
 const queryClient = new QueryClient();
 
+import { ClerkProvider, SignedIn, SignedOut, RedirectToSignIn } from "@clerk/clerk-react";
+
+// Import your publishable key
+const PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
+
+if (!PUBLISHABLE_KEY) {
+  throw new Error("Missing Publishable Key");
+}
+
 const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Navigation />
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/workspace" element={<Workspace />} />
-          <Route path="/workspace/:projectId" element={<Workspace />} />
-          <Route path="/projects" element={<ProjectsDashboard />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
+  <ClerkProvider publishableKey={PUBLISHABLE_KEY} afterSignOutUrl="/">
+    <QueryClientProvider client={queryClient}>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Navigation />
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/workspace" element={
+              <>
+                <SignedIn><Workspace /></SignedIn>
+                <SignedOut><RedirectToSignIn /></SignedOut>
+              </>
+            } />
+            <Route path="/workspace/:projectId" element={
+              <>
+                <SignedIn><Workspace /></SignedIn>
+                <SignedOut><RedirectToSignIn /></SignedOut>
+              </>
+            } />
+            <Route path="/projects" element={
+              <>
+                <SignedIn><ProjectsDashboard /></SignedIn>
+                <SignedOut><RedirectToSignIn /></SignedOut>
+              </>
+            } />
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </QueryClientProvider>
+  </ClerkProvider>
 );
 
 export default App;

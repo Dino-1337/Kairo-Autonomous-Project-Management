@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useParams, Link } from "react-router-dom";
+import { useAuth } from "@clerk/clerk-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -93,21 +94,35 @@ const EVENT_COLORS: Record<string, string> = {
 
 function fmt(dateStr?: string | null, opts?: Intl.DateTimeFormatOptions) {
   if (!dateStr) return "—";
-  return new Date(dateStr).toLocaleDateString("en-IN", opts || { day: "numeric", month: "short", year: "numeric" });
+  const d = dateStr.endsWith("Z") ? dateStr : `${dateStr}Z`;
+  return new Date(d).toLocaleDateString("en-IN", opts || { day: "numeric", month: "short", year: "numeric" });
 }
 
 function fmtTime(dateStr?: string | null) {
   if (!dateStr) return "";
-  return new Date(dateStr).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" });
+  const d = dateStr.endsWith("Z") ? dateStr : `${dateStr}Z`;
+  return new Date(d).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" });
 }
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 const Workspace = () => {
+  const { getToken } = useAuth();
+
+  const apiFetch = async (endpoint: string, options: RequestInit = {}) => {
+    const token = await getToken();
+    const headers = { ...options.headers } as Record<string, string>;
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    return fetch(`${API}${endpoint}`, { ...options, headers });
+  };
+
   const { projectId } = useParams<{ projectId: string }>();
   const pid = Number(projectId);
 
   // Data
+  const [isLoading, setIsLoading] = useState(true);
   const [project, setProject] = useState<Project | null>(null);
   const [ideas, setIdeas] = useState<Idea[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -139,13 +154,14 @@ const Workspace = () => {
 
   const loadAll = useCallback(async () => {
     if (!pid) return;
+    setIsLoading(true);
     try {
       const [projRes, ideasRes, tasksRes, notesRes, eventsRes] = await Promise.all([
-        fetch(`${API}/projects/${pid}`),
-        fetch(`${API}/projects/${pid}/ideas`),
-        fetch(`${API}/projects/${pid}/tasks`),
-        fetch(`${API}/projects/${pid}/meeting-notes`),
-        fetch(`${API}/projects/${pid}/events`),
+        apiFetch(`/projects/${pid}`),
+        apiFetch(`/projects/${pid}/ideas`),
+        apiFetch(`/projects/${pid}/tasks`),
+        apiFetch(`/projects/${pid}/meeting-notes`),
+        apiFetch(`/projects/${pid}/events`),
       ]);
       if (projRes.ok) setProject(await projRes.json());
       if (ideasRes.ok) setIdeas(await ideasRes.json());
@@ -155,6 +171,8 @@ const Workspace = () => {
     } catch (e) {
       console.error(e);
       toast.error("Could not load project data");
+    } finally {
+      setIsLoading(false);
     }
   }, [pid]);
 
@@ -173,7 +191,7 @@ const Workspace = () => {
     if (!ideaText.trim()) { toast.error("Enter an idea first"); return; }
     setIsGenerating(true);
     try {
-      const res = await fetch(`${API}/projects/${pid}/ideas`, {
+      const res = await apiFetch(`/projects/${pid}/ideas`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -205,7 +223,7 @@ const Workspace = () => {
 
   const fetchOnlineEmployees = useCallback(async () => {
     try {
-      const res = await fetch(`${API}/get-online-employees`);
+      const res = await apiFetch(`/get-online-employees`);
       const data = await res.json();
       if (data.success) setOnlineEmployees(data.employees);
     } catch { /* silent */ }
@@ -214,7 +232,7 @@ const Workspace = () => {
   // ── Reassign a task ───────────────────────────────────────────────────────
   const handleReassign = async (taskId: number, employee: { name: string; slack_id: string }) => {
     try {
-      const res = await fetch(`${API}/tasks/${taskId}`, {
+      const res = await apiFetch(`/tasks/${taskId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ assignee: employee.name, assignee_slack_id: employee.slack_id }),
@@ -250,7 +268,7 @@ const Workspace = () => {
         }))
       };
       const idea = ideas.find(i => i.id === ideaId);
-      const res = await fetch(`${API}/confirm-assignments`, {
+      const res = await apiFetch(`/confirm-assignments`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ assignments, user_request: idea?.text ?? "" }),
@@ -272,7 +290,7 @@ const Workspace = () => {
     if (!noteText.trim()) { toast.error("Enter meeting notes first"); return; }
     setIsSavingNote(true);
     try {
-      const res = await fetch(`${API}/projects/${pid}/meeting-notes`, {
+      const res = await apiFetch(`/projects/${pid}/meeting-notes`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -301,7 +319,7 @@ const Workspace = () => {
 
   const handleStatusChange = async (taskId: number, status: TaskStatus) => {
     try {
-      const res = await fetch(`${API}/tasks/${taskId}`, {
+      const res = await apiFetch(`/tasks/${taskId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status }),
@@ -320,7 +338,7 @@ const Workspace = () => {
 
   const handleDueDateChange = async (taskId: number, due_date: string) => {
     try {
-      const res = await fetch(`${API}/tasks/${taskId}`, {
+      const res = await apiFetch(`/tasks/${taskId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ due_date: due_date || null }),
@@ -339,7 +357,7 @@ const Workspace = () => {
     e.stopPropagation();
     if (!window.confirm("Delete this idea and all its tasks?")) return;
     try {
-      await fetch(`${API}/projects/${pid}/ideas/${ideaId}`, { method: "DELETE" });
+      await apiFetch(`/projects/${pid}/ideas/${ideaId}`, { method: "DELETE" });
       setIdeas(prev => prev.filter(i => i.id !== ideaId));
       setTasks(prev => prev.filter(t => t.idea_id !== ideaId));
       if (selection?.kind === "idea" && selection.id === ideaId) setSelection(null);
@@ -356,7 +374,7 @@ const Workspace = () => {
     setAddIdeaOpen(false);
     try {
       const text = note.summary ? `${note.summary}\n\n${note.raw_text}` : note.raw_text;
-      const res = await fetch(`${API}/projects/${pid}/ideas`, {
+      const res = await apiFetch(`/projects/${pid}/ideas`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ text, source: "meeting" }),
@@ -393,6 +411,14 @@ const Workspace = () => {
   }, {});
 
   // ─── Render ────────────────────────────────────────────────────────────────
+
+  if (isLoading || !project) {
+    return (
+      <div className="min-h-screen pt-20 flex items-center justify-center">
+        <Sparkles className="w-8 h-8 text-primary animate-pulse" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen pt-16 flex flex-col">

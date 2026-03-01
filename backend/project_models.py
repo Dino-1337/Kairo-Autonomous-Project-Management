@@ -11,6 +11,7 @@ class ProjectBase(SQLModel):
     name: str
     description: Optional[str] = None
     status: str = "active"
+    user_id: str = "global"  # Defaults to global for backward compatibility
 
 
 class Project(ProjectBase, table=True):
@@ -24,9 +25,9 @@ class Project(ProjectBase, table=True):
     events: List["ProjectEvent"] = Relationship(back_populates="project")
 
 
-class ProjectCreate(ProjectBase):
-    pass
-
+class ProjectCreate(SQLModel):
+    name: str
+    description: Optional[str] = None
 
 class ProjectRead(ProjectBase):
     id: int

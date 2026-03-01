@@ -1,9 +1,10 @@
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from sqlmodel import Session, select
 import sys
 import os
+import jwt
 from datetime import datetime
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -106,9 +107,27 @@ def health():
 # ---------------------------------------------------------------------------
 
 
+def get_current_user(request: Request) -> str:
+    auth_header = request.headers.get("Authorization")
+    if not auth_header or not auth_header.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Missing or invalid authentication token")
+    token = auth_header.split(" ")[1]
+    try:
+        # Decode without verifying signature since it's a local dev project
+        # and Clerk manages the token. In production, use clerk-backend-api
+        payload = jwt.decode(token, options={"verify_signature": False})
+        user_id = payload.get("sub")
+        if not user_id:
+            raise HTTPException(status_code=401, detail="Invalid token payload")
+        return user_id
+    except jwt.DecodeError:
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+
 @app.post("/projects", response_model=ProjectRead)
-def create_project(project: ProjectCreate, session: Session = Depends(get_session)):
+def create_project(project: ProjectCreate, session: Session = Depends(get_session), user_id: str = Depends(get_current_user)):
     db_project = Project.model_validate(project)
+    db_project.user_id = user_id
     session.add(db_project)
     session.commit()
     session.refresh(db_project)
@@ -125,17 +144,26 @@ def create_project(project: ProjectCreate, session: Session = Depends(get_sessio
 
 
 @app.get("/projects", response_model=list[ProjectRead])
-def list_projects(session: Session = Depends(get_session)):
-    projects = session.exec(select(Project)).all()
+def list_projects(session: Session = Depends(get_session), user_id: str = Depends(get_current_user)):
+    projects = session.exec(select(Project).where(Project.user_id == user_id)).all()
     return projects
 
 
 @app.get("/projects/{project_id}", response_model=ProjectRead)
-def get_project(project_id: int, session: Session = Depends(get_session)):
+def get_project(project_id: int, session: Session = Depends(get_session), user_id: str = Depends(get_current_user)):
     project = session.get(Project, project_id)
-    if not project:
+    if not project or project.user_id != user_id:
         raise HTTPException(status_code=404, detail="Project not found")
     return project
+
+@app.delete("/projects/{project_id}")
+def delete_project(project_id: int, session: Session = Depends(get_session), user_id: str = Depends(get_current_user)):
+    project = session.get(Project, project_id)
+    if not project or project.user_id != user_id:
+        raise HTTPException(status_code=404, detail="Project not found")
+    session.delete(project)
+    session.commit()
+    return {"ok": True}
 
 
 class IdeaWithTasksResponse(BaseModel):
@@ -148,9 +176,10 @@ def add_idea_to_project(
     project_id: int,
     idea_in: IdeaCreate,
     session: Session = Depends(get_session),
+    user_id: str = Depends(get_current_user),
 ):
     project = session.get(Project, project_id)
-    if not project:
+    if not project or project.user_id != user_id:
         raise HTTPException(status_code=404, detail="Project not found")
 
     db_idea = Idea(project_id=project_id, text=idea_in.text, source=idea_in.source)
@@ -223,9 +252,9 @@ def add_idea_to_project(
 
 
 @app.get("/projects/{project_id}/tasks", response_model=list[TaskRead])
-def list_project_tasks(project_id: int, session: Session = Depends(get_session)):
+def list_project_tasks(project_id: int, session: Session = Depends(get_session), user_id: str = Depends(get_current_user)):
     project = session.get(Project, project_id)
-    if not project:
+    if not project or project.user_id != user_id:
         raise HTTPException(status_code=404, detail="Project not found")
 
     tasks = session.exec(select(Task).where(Task.project_id == project_id)).all()
@@ -233,9 +262,9 @@ def list_project_tasks(project_id: int, session: Session = Depends(get_session))
 
 
 @app.get("/projects/{project_id}/ideas", response_model=list[IdeaRead])
-def list_project_ideas(project_id: int, session: Session = Depends(get_session)):
+def list_project_ideas(project_id: int, session: Session = Depends(get_session), user_id: str = Depends(get_current_user)):
     project = session.get(Project, project_id)
-    if not project:
+    if not project or project.user_id != user_id:
         raise HTTPException(status_code=404, detail="Project not found")
 
     ideas = session.exec(
@@ -245,9 +274,9 @@ def list_project_ideas(project_id: int, session: Session = Depends(get_session))
 
 
 @app.get("/projects/{project_id}/meeting-notes", response_model=list[MeetingNoteRead])
-def list_meeting_notes(project_id: int, session: Session = Depends(get_session)):
+def list_meeting_notes(project_id: int, session: Session = Depends(get_session), user_id: str = Depends(get_current_user)):
     project = session.get(Project, project_id)
-    if not project:
+    if not project or project.user_id != user_id:
         raise HTTPException(status_code=404, detail="Project not found")
 
     notes = session.exec(
@@ -259,16 +288,24 @@ def list_meeting_notes(project_id: int, session: Session = Depends(get_session))
 
 
 @app.delete("/tasks/{task_id}", status_code=204)
-def delete_task(task_id: int, session: Session = Depends(get_session)):
+def delete_task(task_id: int, session: Session = Depends(get_session), user_id: str = Depends(get_current_user)):
     task = session.get(Task, task_id)
     if not task:
+        raise HTTPException(status_code=404, detail="Task not found")
+        
+    project = session.get(Project, task.project_id)
+    if not project or project.user_id != user_id:
         raise HTTPException(status_code=404, detail="Task not found")
     session.delete(task)
     session.commit()
 
 
 @app.delete("/projects/{project_id}/ideas/{idea_id}", status_code=204)
-def delete_idea(project_id: int, idea_id: int, session: Session = Depends(get_session)):
+def delete_idea(project_id: int, idea_id: int, session: Session = Depends(get_session), user_id: str = Depends(get_current_user)):
+    project = session.get(Project, project_id)
+    if not project or project.user_id != user_id:
+        raise HTTPException(status_code=404, detail="Project not found")
+        
     idea = session.get(Idea, idea_id)
     if not idea or idea.project_id != project_id:
         raise HTTPException(status_code=404, detail="Idea not found")
@@ -283,9 +320,13 @@ def delete_idea(project_id: int, idea_id: int, session: Session = Depends(get_se
 
 
 @app.patch("/tasks/{task_id}", response_model=TaskRead)
-def update_task(task_id: int, patch: TaskUpdate, session: Session = Depends(get_session)):
+def update_task(task_id: int, patch: TaskUpdate, session: Session = Depends(get_session), user_id: str = Depends(get_current_user)):
     task = session.get(Task, task_id)
     if not task:
+        raise HTTPException(status_code=404, detail="Task not found")
+        
+    project = session.get(Project, task.project_id)
+    if not project or project.user_id != user_id:
         raise HTTPException(status_code=404, detail="Task not found")
 
     original_status = task.status
@@ -320,9 +361,10 @@ def add_meeting_note(
     project_id: int,
     note_in: MeetingNoteCreate,
     session: Session = Depends(get_session),
+    user_id: str = Depends(get_current_user),
 ):
     project = session.get(Project, project_id)
-    if not project:
+    if not project or project.user_id != user_id:
         raise HTTPException(status_code=404, detail="Project not found")
 
     db_note = MeetingNote(project_id=project_id, **note_in.dict())
@@ -345,9 +387,9 @@ def add_meeting_note(
 
 
 @app.get("/projects/{project_id}/events", response_model=list[ProjectEventRead])
-def get_project_events(project_id: int, session: Session = Depends(get_session)):
+def get_project_events(project_id: int, session: Session = Depends(get_session), user_id: str = Depends(get_current_user)):
     project = session.get(Project, project_id)
-    if not project:
+    if not project or project.user_id != user_id:
         raise HTTPException(status_code=404, detail="Project not found")
 
     events = (

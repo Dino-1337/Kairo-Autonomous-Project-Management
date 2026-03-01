@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import heroMockup from "@/assets/hero-mockup.jpg";
+import { SignedIn, SignedOut } from "@clerk/clerk-react";
 
 const HeroSection = () => {
   return (
@@ -15,15 +16,26 @@ const HeroSection = () => {
         <p className="text-lg md:text-xl text-foreground/70 max-w-2xl mx-auto mb-8">
           Type what you need — our AI breaks it down, assigns it, and notifies your team instantly.
         </p>
-
-        <Link to="/projects">
-          <Button
-            size="lg"
-            className="neu-button bg-primary text-primary-foreground hover:bg-primary/90 text-lg px-8 py-6 rounded-2xl"
-          >
-            Get Started
-          </Button>
-        </Link>
+        <SignedIn>
+          <Link to="/projects">
+            <Button
+              size="lg"
+              className="neu-button bg-primary text-primary-foreground hover:bg-primary/90 text-lg px-8 py-6 rounded-2xl"
+            >
+              Go to Dashboard
+            </Button>
+          </Link>
+        </SignedIn>
+        <SignedOut>
+          <Link to="/projects">
+            <Button
+              size="lg"
+              className="neu-button bg-primary text-primary-foreground hover:bg-primary/90 text-lg px-8 py-6 rounded-2xl"
+            >
+              Get Started
+            </Button>
+          </Link>
+        </SignedOut>
 
         <div className="mt-16 relative">
           <img
