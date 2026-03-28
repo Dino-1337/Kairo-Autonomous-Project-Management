@@ -5,7 +5,7 @@ import traceback
 from database import engine, init_db
 from sqlmodel import Session
 from project_models import Project, Idea
-from graph.workflow import workflow_app
+from graph.workflow import run_idea_pipeline
 
 PROJECT_ID = 1   # already exists from previous test
 IDEA_TEXT  = "a landing page needs to be built in react"
@@ -19,10 +19,8 @@ def test_ideas():
             "require_approval": False,
             "assignment_mode": "auto",
         }
-        initial_state = {"user_request": IDEA_TEXT, "context": context}
-
         print("  Invoking LangGraph workflow...")
-        final_state = workflow_app.invoke(initial_state)
+        final_state = run_idea_pipeline(IDEA_TEXT, context)
 
         decomposition = final_state.get("decomposition", {}) or {}
         assignments   = final_state.get("assignments")  or {}

@@ -25,11 +25,26 @@ DATABASE_URL = get_database_url()
 engine = create_engine(DATABASE_URL, echo=False)
 
 
+def _ensure_sqlite_meeting_insights_column() -> None:
+    if not get_database_url().lower().startswith("sqlite"):
+        return
+    from sqlalchemy import text
+
+    with engine.begin() as conn:
+        rows = conn.execute(text("PRAGMA table_info(meetingnote)")).fetchall()
+        if not rows:
+            return
+        col_names = [r[1] for r in rows]
+        if "insights" not in col_names:
+            conn.execute(text("ALTER TABLE meetingnote ADD COLUMN insights JSON"))
+
+
 def init_db() -> None:
     """Create database tables if they don't exist."""
     import project_models  # noqa: F401
 
     SQLModel.metadata.create_all(engine)
+    _ensure_sqlite_meeting_insights_column()
 
 
 def get_session() -> Generator[Session, None, None]:

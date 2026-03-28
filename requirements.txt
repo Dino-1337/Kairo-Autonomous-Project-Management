@@ -10,5 +10,6 @@ langchain-openrouter
 sqlmodel
 pymysql
 cryptography
+python-multipart
 
 # pip install -r requirements.txt

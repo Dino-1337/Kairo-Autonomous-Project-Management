@@ -90,3 +90,12 @@ def build_workflow_graph():
 # Compiled graph application that FastAPI can call
 workflow_app = build_workflow_graph()
 
+
+def run_idea_pipeline(user_request: str, context: dict) -> dict:
+    """
+    Invoke route → decompose → assign without persisting anything.
+    Returns the final LangGraph state (includes decomposition, assignments, routing).
+    """
+    initial_state: WorkflowState = {"user_request": user_request, "context": context or {}}
+    return workflow_app.invoke(initial_state)
+
