@@ -1,12 +1,9 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
-import { ExternalLink, FolderOpen, Plus, Sparkles, Trash2 } from "lucide-react";
+import { ExternalLink, FolderOpen, Plus, Sparkles, Trash2, Calendar } from "lucide-react";
 import { useAuth } from "@clerk/clerk-react";
 
 type ProjectStatus = "active" | "paused" | "completed";
@@ -21,6 +18,12 @@ interface Project {
 }
 
 const API_BASE = "http://localhost:8000";
+
+const statusColors: Record<ProjectStatus, { bg: string; text: string; border: string }> = {
+  active:    { bg: "hsl(152, 40%, 93%)", text: "hsl(152, 50%, 22%)", border: "hsl(152, 30%, 78%)" },
+  paused:    { bg: "hsl(36, 40%, 93%)",  text: "hsl(30, 50%, 35%)",  border: "hsl(36, 30%, 78%)"  },
+  completed: { bg: "hsl(220, 15%, 93%)", text: "hsl(220, 15%, 40%)", border: "hsl(220, 10%, 80%)" },
+};
 
 const ProjectsDashboard = () => {
   const navigate = useNavigate();
@@ -37,13 +40,11 @@ const ProjectsDashboard = () => {
       try {
         const token = await getToken();
         const res = await fetch(`${API_BASE}/projects`, {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { Authorization: `Bearer ${token}` },
         });
         if (!res.ok) throw new Error("Failed to load projects");
-        const data: Project[] = await res.json();
-        setProjects(data);
-      } catch (err) {
-        console.error(err);
+        setProjects(await res.json());
+      } catch {
         toast.error("Could not load projects");
       } finally {
         setIsLoadingProjects(false);
@@ -53,164 +54,408 @@ const ProjectsDashboard = () => {
   }, []);
 
   const handleCreateProject = async () => {
-    if (!newProjectName.trim()) {
-      toast.error("Project name is required");
-      return;
-    }
+    if (!newProjectName.trim()) { toast.error("Project name is required"); return; }
     setIsCreatingProject(true);
     try {
       const token = await getToken();
       const res = await fetch(`${API_BASE}/projects`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          name: newProjectName,
-          description: newProjectDescription || null,
-          status: "active",
-        }),
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ name: newProjectName, description: newProjectDescription || null, status: "active" }),
       });
-      if (!res.ok) throw new Error("Failed to create project");
+      if (!res.ok) throw new Error();
       const created: Project = await res.json();
       setProjects((prev) => [created, ...prev]);
-      setNewProjectName("");
-      setNewProjectDescription("");
-      toast.success(`Project "${created.name}" created!`);
-      // Automatically open the newly created project
+      setNewProjectName(""); setNewProjectDescription("");
+      toast.success(`"${created.name}" created!`);
       navigate(`/workspace/${created.id}`);
-    } catch (err) {
-      console.error(err);
+    } catch {
       toast.error("Could not create project");
     } finally {
       setIsCreatingProject(false);
     }
   };
 
-  const handleOpenProject = (projectId: number) => {
-    navigate(`/workspace/${projectId}`);
-  };
-
-  const handleDeleteProject = async (projectId: number, e: React.MouseEvent) => {
+  const handleDeleteProject = async (id: number, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!window.confirm("Are you sure you want to delete this project?")) return;
-    // Optimistically remove from UI (backend delete endpoint can be wired up later)
-    setProjects((prev) => prev.filter((p) => p.id !== projectId));
+    if (!window.confirm("Delete this project?")) return;
+    setProjects((prev) => prev.filter((p) => p.id !== id));
     toast.success("Project removed");
   };
 
   return (
-    <div className="min-h-screen pt-20 pb-12 px-6">
-      <div className="container mx-auto max-w-5xl">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-light tracking-tight flex items-center gap-3">
-            <Sparkles className="w-7 h-7 text-primary" />
-            Your Projects
-          </h1>
-          <p className="text-foreground/60 mt-2 text-sm">
-            Create a project and open it to generate tasks with AI.
+    <div
+      style={{
+        minHeight: "100vh",
+        backgroundColor: "hsl(36, 33%, 97%)",
+        paddingTop: "80px",
+        paddingBottom: "80px",
+      }}
+    >
+      <div className="kairo-container">
+        {/* ── Page Header ── */}
+        <div
+          style={{
+            marginBottom: "2.5rem",
+            paddingBottom: "2rem",
+            borderBottom: "1px solid hsl(36, 15%, 87%)",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", gap: "0.625rem", marginBottom: "0.375rem" }}>
+            <Sparkles
+              size={20}
+              strokeWidth={1.75}
+              style={{ color: "hsl(14, 60%, 55%)" }}
+            />
+            <h1
+              style={{
+                fontFamily: "'Syne', sans-serif",
+                fontSize: "1.75rem",
+                fontWeight: 800,
+                color: "hsl(220, 20%, 12%)",
+                letterSpacing: "-0.04em",
+                margin: 0,
+              }}
+            >
+              Your Projects
+            </h1>
+          </div>
+          <p
+            style={{
+              fontFamily: "'DM Mono', monospace",
+              fontSize: "0.75rem",
+              color: "hsl(14, 60%, 55%)",
+              margin: 0,
+              letterSpacing: "0.04em",
+            }}
+          >
+            Create a project and open it to generate tasks with AI
           </p>
         </div>
 
-        <div className="grid lg:grid-cols-[360px_1fr] gap-8 items-start">
-          {/* Left — Create Project Form */}
-          <Card className="glass-card">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base font-medium flex items-center gap-2">
-                <Plus className="w-4 h-4 text-primary" />
+        {/* ── Two-column layout ── */}
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "340px 1fr",
+            gap: "2rem",
+            alignItems: "start",
+          }}
+        >
+          {/* ── LEFT: Create Project Form ── */}
+          <div
+            className="kairo-card"
+            style={{ padding: "1.75rem", position: "sticky", top: "96px" }}
+          >
+            {/* Card header */}
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "0.5rem",
+                marginBottom: "1.5rem",
+                paddingBottom: "1rem",
+                borderBottom: "1px solid hsl(36, 15%, 90%)",
+              }}
+            >
+              <div
+                style={{
+                  width: "28px",
+                  height: "28px",
+                  borderRadius: "6px",
+                  backgroundColor: "hsl(152, 40%, 93%)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <Plus size={14} style={{ color: "hsl(152, 50%, 20%)" }} />
+              </div>
+              <span
+                style={{
+                  fontFamily: "'Syne', sans-serif",
+                  fontSize: "0.9375rem",
+                  fontWeight: 700,
+                  color: "hsl(220, 20%, 12%)",
+                }}
+              >
                 New Project
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <Input
-                placeholder="Project name"
-                value={newProjectName}
-                onChange={(e) => setNewProjectName(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleCreateProject()}
-                className="bg-background/50"
-              />
-              <Textarea
-                placeholder="Short description (optional)"
-                value={newProjectDescription}
-                onChange={(e) => setNewProjectDescription(e.target.value)}
-                className="bg-background/50 min-h-[80px]"
-              />
-              <Button
+              </span>
+            </div>
+
+            {/* Form fields */}
+            <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+              <div>
+                <label
+                  style={{
+                    fontFamily: "'DM Mono', monospace",
+                    fontSize: "0.6875rem",
+                    fontWeight: 500,
+                    textTransform: "uppercase",
+                    letterSpacing: "0.08em",
+                    color: "hsl(220, 8%, 48%)",
+                    display: "block",
+                    marginBottom: "0.375rem",
+                  }}
+                >
+                  Project Name
+                </label>
+                <Input
+                  placeholder="e.g. Mobile App Redesign"
+                  value={newProjectName}
+                  onChange={(e) => setNewProjectName(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleCreateProject()}
+                  style={{
+                    fontFamily: "'Outfit', sans-serif",
+                    borderColor: "hsl(36, 15%, 87%)",
+                    backgroundColor: "hsl(36, 33%, 97%)",
+                  }}
+                />
+              </div>
+
+              <div>
+                <label
+                  style={{
+                    fontFamily: "'DM Mono', monospace",
+                    fontSize: "0.6875rem",
+                    fontWeight: 500,
+                    textTransform: "uppercase",
+                    letterSpacing: "0.08em",
+                    color: "hsl(220, 8%, 48%)",
+                    display: "block",
+                    marginBottom: "0.375rem",
+                  }}
+                >
+                  Description{" "}
+                  <span style={{ opacity: 0.5, textTransform: "none", letterSpacing: 0 }}>
+                    (optional)
+                  </span>
+                </label>
+                <Textarea
+                  placeholder="Brief overview of the project..."
+                  value={newProjectDescription}
+                  onChange={(e) => setNewProjectDescription(e.target.value)}
+                  style={{
+                    fontFamily: "'Outfit', sans-serif",
+                    minHeight: "88px",
+                    resize: "none",
+                    borderColor: "hsl(36, 15%, 87%)",
+                    backgroundColor: "hsl(36, 33%, 97%)",
+                  }}
+                />
+              </div>
+
+              <button
                 onClick={handleCreateProject}
                 disabled={isCreatingProject}
-                className="w-full neu-button bg-primary text-primary-foreground"
+                className="kairo-btn-primary"
+                style={{
+                  width: "100%",
+                  padding: "0.75rem",
+                  fontSize: "0.9375rem",
+                  opacity: isCreatingProject ? 0.7 : 1,
+                  cursor: isCreatingProject ? "not-allowed" : "pointer",
+                }}
               >
-                <Plus className="w-4 h-4 mr-2" />
+                <Plus size={15} />
                 {isCreatingProject ? "Creating..." : "Create & Open Project"}
-              </Button>
-            </CardContent>
-          </Card>
+              </button>
+            </div>
+          </div>
 
-          {/* Right — Projects List */}
-          <div className="space-y-3">
+          {/* ── RIGHT: Projects List ── */}
+          <div style={{ display: "flex", flexDirection: "column", gap: "0.875rem" }}>
+            {/* Loading */}
             {isLoadingProjects && (
-              <p className="text-sm text-muted-foreground py-4">Loading projects...</p>
+              <div style={{ display: "flex", flexDirection: "column", gap: "0.875rem" }}>
+                {[1, 2, 3].map((i) => (
+                  <div
+                    key={i}
+                    className="shimmer kairo-card"
+                    style={{ height: "80px", opacity: 0.6 }}
+                  />
+                ))}
+              </div>
             )}
 
+            {/* Empty state */}
             {!isLoadingProjects && projects.length === 0 && (
-              <Card className="glass-card">
-                <CardContent className="py-12 flex flex-col items-center gap-3 text-center">
-                  <FolderOpen className="w-10 h-10 text-muted-foreground/40" />
-                  <p className="text-sm text-muted-foreground">
-                    No projects yet. Create your first project to get started.
-                  </p>
-                </CardContent>
-              </Card>
+              <div
+                className="kairo-card"
+                style={{
+                  padding: "3.5rem 2rem",
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  textAlign: "center",
+                  gap: "0.75rem",
+                }}
+              >
+                <div
+                  style={{
+                    width: "52px",
+                    height: "52px",
+                    borderRadius: "14px",
+                    backgroundColor: "hsl(36, 20%, 95%)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <FolderOpen size={22} style={{ color: "hsl(220, 8%, 60%)" }} />
+                </div>
+                <p
+                  style={{
+                    fontFamily: "'Outfit', sans-serif",
+                    fontSize: "0.9rem",
+                    color: "hsl(220, 8%, 55%)",
+                    margin: 0,
+                    maxWidth: "260px",
+                    lineHeight: 1.6,
+                  }}
+                >
+                  No projects yet. Create your first project to get started.
+                </p>
+              </div>
             )}
 
-            {projects.map((project) => (
-              <Card
-                key={project.id}
-                className="glass-card hover:shadow-md transition-all duration-200 cursor-pointer group"
-                onClick={() => handleOpenProject(project.id)}
-              >
-                <CardContent className="py-4 px-5 flex items-center justify-between gap-4">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-0.5">
-                      <span className="font-medium truncate">{project.name}</span>
-                      <Badge
-                        variant={project.status === "active" ? "default" : "outline"}
-                        className="text-xs shrink-0"
+            {/* Project cards */}
+            {projects.map((project, i) => {
+              const badge = statusColors[project.status] ?? statusColors.active;
+              return (
+                <div
+                  key={project.id}
+                  className="kairo-card reveal"
+                  style={{
+                    animationDelay: `${i * 0.06}s`,
+                    padding: "1.25rem 1.5rem",
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    gap: "1rem",
+                    borderLeft: "3px solid transparent",
+                    transition: "all 0.2s ease",
+                  }}
+                  onClick={() => navigate(`/workspace/${project.id}`)}
+                  onMouseEnter={(e) => {
+                    (e.currentTarget as HTMLElement).style.borderLeftColor = "hsl(152, 50%, 20%)";
+                  }}
+                  onMouseLeave={(e) => {
+                    (e.currentTarget as HTMLElement).style.borderLeftColor = "transparent";
+                  }}
+                >
+                  {/* Left content */}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "0.625rem", marginBottom: "0.375rem" }}>
+                      <span
+                        style={{
+                          fontFamily: "'Syne', sans-serif",
+                          fontSize: "1rem",
+                          fontWeight: 700,
+                          color: "hsl(220, 20%, 12%)",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        {project.name}
+                      </span>
+                      <span
+                        style={{
+                          fontFamily: "'DM Mono', monospace",
+                          fontSize: "0.625rem",
+                          fontWeight: 500,
+                          letterSpacing: "0.06em",
+                          textTransform: "uppercase",
+                          padding: "0.125rem 0.5rem",
+                          borderRadius: "999px",
+                          backgroundColor: badge.bg,
+                          color: badge.text,
+                          border: `1px solid ${badge.border}`,
+                          flexShrink: 0,
+                        }}
                       >
                         {project.status}
-                      </Badge>
+                      </span>
                     </div>
+
                     {project.description && (
-                      <p className="text-xs text-muted-foreground truncate">{project.description}</p>
+                      <p
+                        style={{
+                          fontFamily: "'Outfit', sans-serif",
+                          fontSize: "0.875rem",
+                          color: "hsl(220, 8%, 52%)",
+                          margin: "0 0 0.375rem",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        {project.description}
+                      </p>
                     )}
-                    <p className="text-[11px] text-muted-foreground/60 mt-1">
-                      Created {new Date(project.created_at).toLocaleDateString()}
-                    </p>
+
+                    <div style={{ display: "flex", alignItems: "center", gap: "0.375rem" }}>
+                      <Calendar size={11} style={{ color: "hsl(220, 8%, 62%)" }} />
+                      <span
+                        style={{
+                          fontFamily: "'DM Mono', monospace",
+                          fontSize: "0.6875rem",
+                          color: "hsl(220, 8%, 62%)",
+                        }}
+                      >
+                        {new Date(project.created_at).toLocaleDateString("en-GB", {
+                          day: "numeric",
+                          month: "short",
+                          year: "numeric",
+                        })}
+                      </span>
+                    </div>
                   </div>
 
-                  <div className="flex items-center gap-2 shrink-0">
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className="h-8 px-2 text-destructive hover:text-destructive hover:bg-destructive/10 opacity-0 group-hover:opacity-100 transition-opacity"
+                  {/* Right actions */}
+                  <div
+                    style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexShrink: 0 }}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <button
                       onClick={(e) => handleDeleteProject(project.id, e)}
+                      style={{
+                        background: "none",
+                        border: "none",
+                        cursor: "pointer",
+                        padding: "0.375rem",
+                        borderRadius: "6px",
+                        color: "hsl(0, 0%, 70%)",
+                        transition: "all 0.15s",
+                        display: "flex",
+                        alignItems: "center",
+                      }}
+                      onMouseEnter={(e) => {
+                        (e.currentTarget as HTMLElement).style.color = "hsl(0, 78%, 55%)";
+                        (e.currentTarget as HTMLElement).style.backgroundColor = "hsl(0, 78%, 96%)";
+                      }}
+                      onMouseLeave={(e) => {
+                        (e.currentTarget as HTMLElement).style.color = "hsl(0, 0%, 70%)";
+                        (e.currentTarget as HTMLElement).style.backgroundColor = "transparent";
+                      }}
                     >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </Button>
-                    <Button
-                      size="sm"
-                      className="h-8 neu-button bg-primary text-primary-foreground"
-                      onClick={(e) => { e.stopPropagation(); handleOpenProject(project.id); }}
+                      <Trash2 size={14} strokeWidth={1.75} />
+                    </button>
+
+                    <button
+                      onClick={() => navigate(`/workspace/${project.id}`)}
+                      className="kairo-btn-ghost"
+                      style={{ padding: "0.375rem 0.875rem", fontSize: "0.8125rem" }}
                     >
-                      <ExternalLink className="w-3.5 h-3.5 mr-1.5" />
+                      <ExternalLink size={13} strokeWidth={1.75} />
                       Open
-                    </Button>
+                    </button>
                   </div>
-                </CardContent>
-              </Card>
-            ))}
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>

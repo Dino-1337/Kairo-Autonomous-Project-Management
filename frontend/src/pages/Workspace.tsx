@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useAuth, useUser } from "@clerk/clerk-react";
 import { Button } from "@/components/ui/button";
@@ -198,6 +198,14 @@ const Workspace = () => {
   const [deadline, setDeadline] = useState("None");
   const [assignmentMode, setAssignmentMode] = useState<"auto" | "manual">("auto");
   const [onlineEmployees, setOnlineEmployees] = useState<{ name: string; slack_id: string; role: string; is_online: boolean }[]>([]);
+
+  // Ref to auto-scroll the add-note form into view when it opens
+  const noteFormRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (addNoteOpen && noteFormRef.current) {
+      setTimeout(() => noteFormRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" }), 50);
+    }
+  }, [addNoteOpen]);
 
   const [ideaDraft, setIdeaDraft] = useState<IdeaDraftState | null>(null);
   const [isConfirmingIdea, setIsConfirmingIdea] = useState(false);
@@ -619,8 +627,41 @@ const Workspace = () => {
 
   if (isLoading || !project) {
     return (
-      <div className="min-h-screen pt-20 flex items-center justify-center">
-        <Sparkles className="w-8 h-8 text-primary animate-pulse" />
+      <div
+        style={{
+          minHeight: "100vh",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          backgroundColor: "hsl(36, 33%, 97%)",
+          flexDirection: "column",
+          gap: "1rem",
+        }}
+      >
+        <div
+          style={{
+            width: "40px",
+            height: "40px",
+            borderRadius: "10px",
+            backgroundColor: "hsl(152, 40%, 93%)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            animation: "float-slow 2s ease-in-out infinite",
+          }}
+        >
+          <Sparkles size={18} style={{ color: "hsl(152, 50%, 22%)" }} />
+        </div>
+        <span
+          style={{
+            fontFamily: "'DM Mono', monospace",
+            fontSize: "0.75rem",
+            color: "hsl(220, 8%, 55%)",
+            letterSpacing: "0.08em",
+          }}
+        >
+          Loading workspace...
+        </span>
       </div>
     );
   }
@@ -628,31 +669,101 @@ const Workspace = () => {
   // ── Render ─────────────────────────────────────────────────────────────────
 
   return (
-    <div className="min-h-screen pt-16 flex flex-col">
-      {/* Top bar */}
-      <div className="border-b border-border/50 px-4 py-2 flex items-center gap-3 text-sm bg-background/80 backdrop-blur-sm">
-        <Link to="/projects" className="flex items-center gap-1.5 text-muted-foreground hover:text-foreground transition-colors">
-          <ArrowLeft className="w-4 h-4" /> Projects
+    <div style={{ minHeight: "100vh", paddingTop: "64px", display: "flex", flexDirection: "column", backgroundColor: "hsl(36, 33%, 97%)" }}>
+      {/* ── Top breadcrumb bar ── */}
+      <div
+        style={{
+          borderBottom: "1px solid hsl(36, 15%, 87%)",
+          padding: "0 1.5rem",
+          height: "44px",
+          display: "flex",
+          alignItems: "center",
+          gap: "0.625rem",
+          backgroundColor: "hsl(0, 0%, 100%)",
+          backdropFilter: "blur(8px)",
+          flexShrink: 0,
+        }}
+      >
+        <Link
+          to="/projects"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "0.375rem",
+            fontFamily: "'DM Mono', monospace",
+            fontSize: "0.75rem",
+            color: "hsl(220, 8%, 55%)",
+            textDecoration: "none",
+            transition: "color 0.15s",
+          }}
+          onMouseEnter={(e) => ((e.currentTarget as HTMLElement).style.color = "hsl(152, 50%, 22%)")}
+          onMouseLeave={(e) => ((e.currentTarget as HTMLElement).style.color = "hsl(220, 8%, 55%)")}
+        >
+          <ArrowLeft size={13} /> Projects
         </Link>
-        <>
-          <span className="text-muted-foreground/40">/</span>
-          <span className="font-medium">{project.name}</span>
-          {project.description && <span className="text-muted-foreground text-xs">— {project.description}</span>}
-          <Badge variant="outline" className="text-xs ml-auto">{project.status}</Badge>
-          <span className="text-xs text-muted-foreground">Created {fmt(project.created_at)}</span>
-        </>
+        <span style={{ color: "hsl(220, 8%, 75%)", fontFamily: "'DM Mono', monospace", fontSize: "0.75rem" }}>/</span>
+        <span style={{ fontFamily: "'Syne', sans-serif", fontSize: "0.875rem", fontWeight: 700, color: "hsl(220, 20%, 12%)" }}>
+          {project.name}
+        </span>
+        {project.description && (
+          <span style={{ fontFamily: "'Outfit', sans-serif", fontSize: "0.8125rem", color: "hsl(220, 8%, 58%)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "300px" }}>
+            — {project.description}
+          </span>
+        )}
+        <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: "0.75rem" }}>
+          <span
+            style={{
+              fontFamily: "'DM Mono', monospace",
+              fontSize: "0.625rem",
+              fontWeight: 500,
+              letterSpacing: "0.06em",
+              textTransform: "uppercase",
+              padding: "0.125rem 0.5rem",
+              borderRadius: "999px",
+              backgroundColor: "hsl(152, 40%, 93%)",
+              color: "hsl(152, 50%, 22%)",
+              border: "1px solid hsl(152, 30%, 78%)",
+            }}
+          >
+            {project.status}
+          </span>
+          <span style={{ fontFamily: "'DM Mono', monospace", fontSize: "0.6875rem", color: "hsl(220, 8%, 62%)" }}>
+            Created {fmt(project.created_at)}
+          </span>
+        </div>
       </div>
 
       {/* Main workspace */}
-      <div className="flex flex-1 min-h-0 overflow-hidden">
+      <div style={{ display: "flex", flex: 1, minHeight: 0, overflow: "hidden" }}>
         {/* ── LEFT SIDEBAR ── */}
-        <aside className="w-64 shrink-0 border-r border-border/50 flex flex-col overflow-y-auto bg-muted/20">
-
-          {/* IDEAS */}
-          <div className="p-3 border-b border-border/40">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-                <Lightbulb className="w-3.5 h-3.5" /> Ideas
+        <aside
+          style={{
+            width: "248px",
+            flexShrink: 0,
+            borderRight: "1px solid hsl(36, 15%, 87%)",
+            display: "flex",
+            flexDirection: "column",
+            overflowY: "auto",
+            backgroundColor: "hsl(0, 0%, 100%)",
+          }}
+        >
+          {/* IDEAS section */}
+          <div style={{ padding: "0.875rem", borderBottom: "1px solid hsl(36, 15%, 90%)" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.625rem" }}>
+              <span
+                style={{
+                  fontFamily: "'DM Mono', monospace",
+                  fontSize: "0.625rem",
+                  fontWeight: 500,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.1em",
+                  color: "hsl(14, 60%, 55%)",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "0.375rem",
+                }}
+              >
+                <Lightbulb size={12} /> Ideas
               </span>
               <Button size="sm" variant="ghost" className="h-6 w-6 p-0"
                 onClick={() => { setAddIdeaOpen(v => !v); setAddNoteOpen(false); }}>
@@ -661,27 +772,27 @@ const Workspace = () => {
             </div>
 
             {addIdeaOpen && (
-              <div className="mb-2 space-y-2 animate-in fade-in slide-in-from-top-1">
+              <div className="mb-3 kairo-card p-3 space-y-2.5 animate-slide-reveal relative">
                 <Textarea placeholder="Describe the idea or feature..." value={ideaText}
                   onChange={e => setIdeaText(e.target.value)}
-                  className="text-sm min-h-[70px] resize-none bg-background" />
-                <div className="rounded-lg border border-border/60 p-2 space-y-1.5 bg-background text-xs">
-                  <div className="flex items-center justify-between">
-                    <Label className="text-xs text-muted-foreground">High urgency</Label>
-                    <Switch checked={urgency} onCheckedChange={setUrgency} className="scale-75" />
+                  className="text-sm min-h-[70px] resize-none bg-background border-border shadow-sm focus-visible:ring-primary/40" />
+                <div className="rounded-md border border-border/80 bg-surface shadow-sm overflow-hidden text-xs flex flex-col divide-y divide-border/50">
+                  <div className="flex items-center justify-between p-2.5 hover:bg-muted/20 transition-colors">
+                    <Label className="text-xs text-foreground font-medium cursor-pointer">High urgency</Label>
+                    <Switch checked={urgency} onCheckedChange={setUrgency} className="scale-75 origin-right outline-none ring-0" />
                   </div>
-                  <div className="flex items-center justify-between">
-                    <Label className="text-xs text-muted-foreground">Require approval</Label>
-                    <Switch checked={requireApproval} onCheckedChange={setRequireApproval} className="scale-75" />
+                  <div className="flex items-center justify-between p-2.5 hover:bg-muted/20 transition-colors">
+                    <Label className="text-xs text-foreground font-medium cursor-pointer">Require approval</Label>
+                    <Switch checked={requireApproval} onCheckedChange={setRequireApproval} className="scale-75 origin-right outline-none ring-0" />
                   </div>
-                  <div className="flex items-center justify-between">
-                    <Label className="text-xs text-muted-foreground">{assignmentMode === "auto" ? "AI assigns" : "Manual"}</Label>
-                    <Switch checked={assignmentMode === "manual"} onCheckedChange={v => { setAssignmentMode(v ? "manual" : "auto"); if (v) fetchOnlineEmployees(); }} className="scale-75" />
+                  <div className="flex items-center justify-between p-2.5 hover:bg-muted/20 transition-colors">
+                    <Label className="text-xs text-foreground font-medium cursor-pointer">{assignmentMode === "auto" ? "AI assigns" : "Manual assignment"}</Label>
+                    <Switch checked={assignmentMode === "manual"} onCheckedChange={v => { setAssignmentMode(v ? "manual" : "auto"); if (v) fetchOnlineEmployees(); }} className="scale-75 origin-right outline-none ring-0" />
                   </div>
-                  <div>
-                    <Label className="text-xs text-muted-foreground block mb-1">Deadline</Label>
+                  <div className="p-2.5 bg-muted/10">
+                    <Label className="text-[11px] text-muted-foreground font-medium uppercase tracking-wider block mb-2">Deadline</Label>
                     <Select value={deadline} onValueChange={setDeadline}>
-                      <SelectTrigger className="h-7 text-xs"><SelectValue /></SelectTrigger>
+                      <SelectTrigger className="h-8 text-xs bg-background border-border shadow-sm hover:border-primary/40 transition-colors focus:ring-primary/30"><SelectValue /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="None">No deadline</SelectItem>
                         <SelectItem value="Urgent (24h)">Urgent (24h)</SelectItem>
@@ -692,12 +803,12 @@ const Workspace = () => {
                     </Select>
                   </div>
                 </div>
-                <div className="flex gap-2">
-                  <Button size="sm" className="flex-1 bg-primary text-primary-foreground text-xs"
+                <div className="flex gap-2 pt-1">
+                  <Button size="sm" className="flex-1 kairo-btn-primary h-8 px-3 py-0 text-xs shadow-sm hover:shadow-md"
                     onClick={handlePreviewIdea} disabled={isGenerating}>
-                    {isGenerating ? <><RotateCw className="w-3 h-3 mr-1 animate-spin" />Generating...</> : <><Sparkles className="w-3 h-3 mr-1" />Generate tasks</>}
+                    {isGenerating ? <><RotateCw className="w-3 h-3 mr-1.5 animate-spin" />Generating...</> : <><Sparkles className="w-3 h-3 mr-1.5" />Generate tasks</>}
                   </Button>
-                  <Button size="sm" variant="ghost" onClick={() => setAddIdeaOpen(false)}>✕</Button>
+                  <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-muted-foreground hover:bg-muted/50 hover:text-foreground border border-transparent" onClick={() => setAddIdeaOpen(false)}>✕</Button>
                 </div>
               </div>
             )}
@@ -735,11 +846,23 @@ const Workspace = () => {
             </div>
           </div>
 
-          {/* MEETING NOTES */}
-          <div className="p-3 border-b border-border/40">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-                <FileText className="w-3.5 h-3.5" /> Meeting Notes
+          {/* MEETING NOTES section */}
+          <div style={{ padding: "0.875rem", borderBottom: "1px solid hsl(36, 15%, 90%)" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.625rem" }}>
+              <span
+                style={{
+                  fontFamily: "'DM Mono', monospace",
+                  fontSize: "0.625rem",
+                  fontWeight: 500,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.1em",
+                  color: "hsl(152, 45%, 30%)",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "0.375rem",
+                }}
+              >
+                <FileText size={12} /> Meeting Notes
               </span>
               <Button size="sm" variant="ghost" className="h-6 w-6 p-0"
                 onClick={() => { setAddNoteOpen(v => !v); setAddIdeaOpen(false); }}>
@@ -748,16 +871,16 @@ const Workspace = () => {
             </div>
 
             {addNoteOpen && (
-              <div className="mb-2 space-y-2 animate-in fade-in slide-in-from-top-1">
-                <Input type="date" value={noteDate} onChange={e => setNoteDate(e.target.value)} className="text-sm h-8 bg-background" />
-                <Textarea placeholder="Paste meeting notes..." value={noteText} onChange={e => setNoteText(e.target.value)} className="text-sm min-h-[70px] resize-none bg-background" />
-                <Textarea placeholder="Quick summary (optional)" value={noteSummary} onChange={e => setNoteSummary(e.target.value)} className="text-sm min-h-[44px] resize-none bg-background" />
-                <div className="flex gap-2">
-                  <Button size="sm" className="flex-1 bg-primary text-primary-foreground text-xs"
+              <div ref={noteFormRef} className="mb-3 kairo-card p-3 space-y-2.5 animate-slide-reveal relative">
+                <Input type="date" value={noteDate} onChange={e => setNoteDate(e.target.value)} className="text-sm h-8 bg-background border-border shadow-sm focus-visible:ring-primary/40" />
+                <Textarea placeholder="Paste meeting notes..." value={noteText} onChange={e => setNoteText(e.target.value)} className="text-sm min-h-[70px] resize-none bg-background border-border shadow-sm focus-visible:ring-primary/40" />
+                <Textarea placeholder="Quick summary (optional)" value={noteSummary} onChange={e => setNoteSummary(e.target.value)} className="text-sm min-h-[44px] resize-none bg-background border-border shadow-sm focus-visible:ring-primary/40" />
+                <div className="flex gap-2 pt-1">
+                  <Button size="sm" className="flex-1 kairo-btn-primary h-8 px-3 py-0 text-xs shadow-sm hover:shadow-md"
                     onClick={handleAddNote} disabled={isSavingNote}>
                     {isSavingNote ? "Saving..." : "Save note"}
                   </Button>
-                  <Button size="sm" variant="ghost" onClick={() => setAddNoteOpen(false)}>✕</Button>
+                  <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-muted-foreground hover:bg-muted/50 hover:text-foreground border border-transparent" onClick={() => setAddNoteOpen(false)}>✕</Button>
                 </div>
               </div>
             )}
@@ -790,14 +913,25 @@ const Workspace = () => {
             </div>
           </div>
 
-          {/* Sprints summary */}
+          {/* Sprints */}
           {sprints.length > 0 && (
-            <div className="p-3">
-              <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Sprints</span>
-              <div className="mt-1.5 space-y-1">
+            <div style={{ padding: "0.875rem" }}>
+              <span
+                style={{
+                  fontFamily: "'DM Mono', monospace",
+                  fontSize: "0.625rem",
+                  fontWeight: 500,
+                  textTransform: "uppercase",
+                  letterSpacing: "0.1em",
+                  color: "hsl(220, 8%, 55%)",
+                }}
+              >
+                Sprints
+              </span>
+              <div style={{ marginTop: "0.5rem", display: "flex", flexDirection: "column", gap: "0.25rem" }}>
                 {sprints.map(s => (
-                  <div key={s.id} className="flex items-center justify-between px-1 py-1">
-                    <span className="text-xs truncate">{s.name}</span>
+                  <div key={s.id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0.375rem 0.25rem" }}>
+                    <span style={{ fontFamily: "'Outfit', sans-serif", fontSize: "0.8125rem", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{s.name}</span>
                     <Badge variant="outline" className="text-[10px] h-4">{s.status}</Badge>
                   </div>
                 ))}
@@ -807,14 +941,46 @@ const Workspace = () => {
         </aside>
 
         {/* ── MAIN AREA ── */}
-        <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+        <div style={{ display: "flex", minHeight: 0, flex: 1, flexDirection: "column", overflow: "hidden", backgroundColor: "hsl(36, 33%, 97%)" }}>
 
           {/* Tab bar */}
-          <div className="flex border-b border-border/50 bg-background/60 px-4 shrink-0">
+          <div
+            style={{
+              display: "flex",
+              borderBottom: "1px solid hsl(36, 15%, 87%)",
+              backgroundColor: "hsl(0, 0%, 100%)",
+              padding: "0 1rem",
+              flexShrink: 0,
+              gap: "0.125rem",
+            }}
+          >
             {TABS.map(t => (
-              <button key={t.key} onClick={() => setActiveTab(t.key)}
-                className={`flex items-center gap-1.5 px-3 py-3 text-xs font-medium border-b-2 -mb-px transition-colors ${activeTab === t.key ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground"
-                  }`}
+              <button
+                key={t.key}
+                onClick={() => setActiveTab(t.key)}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "0.375rem",
+                  padding: "0 0.875rem",
+                  height: "44px",
+                  fontFamily: "'Outfit', sans-serif",
+                  fontSize: "0.8125rem",
+                  fontWeight: activeTab === t.key ? 600 : 400,
+                  color: activeTab === t.key ? "hsl(152, 50%, 20%)" : "hsl(220, 8%, 52%)",
+                  background: "none",
+                  border: "none",
+                  borderBottom: activeTab === t.key ? "2px solid hsl(152, 50%, 20%)" : "2px solid transparent",
+                  cursor: "pointer",
+                  transition: "all 0.15s ease",
+                  marginBottom: "-1px",
+                }}
+                onMouseEnter={(e) => {
+                  if (activeTab !== t.key) (e.currentTarget as HTMLElement).style.color = "hsl(220, 15%, 20%)";
+                }}
+                onMouseLeave={(e) => {
+                  if (activeTab !== t.key) (e.currentTarget as HTMLElement).style.color = "hsl(220, 8%, 52%)";
+                }}
               >
                 {t.icon}{t.label}
               </button>
@@ -822,12 +988,12 @@ const Workspace = () => {
           </div>
 
           {/* Tab content */}
-          <main className="relative min-h-0 flex-1 overflow-y-auto p-5">
+          <main style={{ position: "relative", minHeight: 0, flex: 1, overflowY: "auto", padding: "1.5rem" }}>
             {/* ── IDEAS TAB ── */}
             {activeTab === "ideas" && (
               <>
                 {ideaDraft && (
-                  <div className="space-y-4 max-w-3xl">
+                  <div className="space-y-4 max-w-4xl mx-auto pb-8 pt-2">
                     <div className="glass-card p-5 border-l-4 border-primary">
                       <h2 className="text-lg font-medium flex items-center gap-2">
                         <Sparkles className="w-5 h-5 text-primary" /> Review before saving
@@ -934,7 +1100,7 @@ const Workspace = () => {
 
                     {/* Idea selected */}
                     {selectedIdea && (
-                      <div className="space-y-5 max-w-3xl">
+                      <div className="space-y-5 max-w-4xl mx-auto pb-8 pt-2">
                         <div>
                           <h2 className="text-xl font-medium flex items-start gap-2">
                             <Lightbulb className="w-5 h-5 text-primary shrink-0 mt-0.5" />
@@ -1036,7 +1202,7 @@ const Workspace = () => {
 
                     {/* Note selected */}
                     {selectedNote && (
-                      <div className="space-y-5 max-w-3xl">
+                      <div className="space-y-5 max-w-4xl mx-auto pb-8 pt-2">
                         <div className="flex items-start justify-between gap-4">
                           <div>
                             <h2 className="text-xl font-medium flex items-center gap-2">
@@ -1089,7 +1255,7 @@ const Workspace = () => {
 
             {/* ── TIMELINE TAB ── raw event log only */}
             {activeTab === "timeline" && (
-              <div className="space-y-6 max-w-3xl">
+              <div className="space-y-6 max-w-4xl mx-auto pb-8 pt-2">
                 <h2 className="text-xl font-medium flex items-center gap-2">
                   <Clock className="w-5 h-5 text-primary" /> Project Timeline
                 </h2>
@@ -1129,13 +1295,14 @@ const Workspace = () => {
               type DigestEntry =
                 | { kind: "idea"; date: Date; idea: typeof ideas[0] }
                 | { kind: "note"; date: Date; note: typeof notes[0] };
+              const toUtcDate = (s: string) => { const d = s.endsWith("Z") ? s : `${s}Z`; return new Date(d); };
               const entries: DigestEntry[] = [
-                ...ideas.map(i => ({ kind: "idea" as const, date: new Date(i.created_at), idea: i })),
-                ...notes.map(n => ({ kind: "note" as const, date: new Date(n.meeting_date || n.created_at), note: n })),
+                ...ideas.map(i => ({ kind: "idea" as const, date: toUtcDate(i.created_at), idea: i })),
+                ...notes.map(n => ({ kind: "note" as const, date: toUtcDate(n.meeting_date || n.created_at), note: n })),
               ].sort((a, b) => b.date.getTime() - a.date.getTime());
 
               return (
-                <div className="space-y-4 max-w-3xl">
+                <div className="space-y-4 max-w-4xl mx-auto pb-8 pt-2">
                   <div className="flex items-center justify-between">
                     <div>
                       <h2 className="text-xl font-medium flex items-center gap-2">
@@ -1165,11 +1332,13 @@ const Workspace = () => {
 
                   {/* AI narrative — only shown once manually requested; cached until refreshed */}
                   {progressSummary && (
-                    <div className="glass-card p-4 border-l-4 border-violet-400 animate-in fade-in">
-                      <p className="text-xs font-semibold text-violet-700 mb-2 uppercase tracking-wider flex items-center gap-1.5">
-                        <Sparkles className="w-3 h-3" /> AI Narrative
+                    <div className="glass-card p-5 border-l-4 border-violet-500 bg-surface/50 mt-4 shadow-sm">
+                      <p className="text-[10px] font-semibold text-violet-500 mb-2 uppercase tracking-widest flex items-center gap-1.5">
+                        <Sparkles className="w-3.5 h-3.5" /> AI Narrative
                       </p>
-                      <div className="text-sm text-foreground/90 whitespace-pre-wrap font-sans leading-relaxed">{progressSummary}</div>
+                      <div className="text-sm font-medium text-foreground/90 whitespace-pre-wrap leading-relaxed">
+                        {progressSummary === "null" || progressSummary.trim() === "" ? "Summary could not be generated. Please try again." : progressSummary}
+                      </div>
                     </div>
                   )}
 
@@ -1177,66 +1346,73 @@ const Workspace = () => {
                   {entries.length === 0 && (
                     <p className="text-sm text-muted-foreground text-center py-16">No ideas or meeting notes yet.</p>
                   )}
-                  {entries.map((entry, idx) => {
-                    if (entry.kind === "idea") {
-                      const { idea } = entry;
-                      const itasks = ideaTasks(idea.id);
-                      const done = itasks.filter(t => t.status === "done").length;
-                      const pct = itasks.length ? Math.round((done / itasks.length) * 100) : 0;
-                      return (
-                        <div key={`idea-${idea.id}`}
-                          className="glass-card p-4 border-l-4 border-primary/40 cursor-pointer hover:border-primary/70 transition-colors"
-                          onClick={() => { setSelection({ kind: "idea", id: idea.id }); setActiveTab("ideas"); }}
-                        >
-                          <div className="flex items-center justify-between gap-3 mb-1">
-                            <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-primary/10 text-primary">
-                              {idea.source === "meeting" ? "from meeting" : "idea"}
-                            </span>
-                            <span className="text-[10px] text-muted-foreground">
-                              {entry.date.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
-                            </span>
-                          </div>
-                          <p className="text-sm font-medium line-clamp-2 mt-1">{idea.text}</p>
-                          {itasks.length > 0 && (
-                            <>
-                              <div className="flex items-center justify-between mt-2 mb-1">
-                                <span className="text-[10px] text-muted-foreground">{done}/{itasks.length} tasks done</span>
-                                <span className="text-[10px] text-muted-foreground">{pct}%</span>
+                  {entries.length > 0 && (
+                    <div className="relative border-l-2 border-border/80 ml-3 md:ml-4 space-y-8 mt-8">
+                      {entries.map((entry, idx) => {
+                        const dateStr = entry.date.toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" });
+                        
+                        if (entry.kind === "idea") {
+                          const { idea } = entry;
+                          const itasks = ideaTasks(idea.id);
+                          const done = itasks.filter(t => t.status === "done").length;
+                          const pct = itasks.length ? Math.round((done / itasks.length) * 100) : 0;
+                          return (
+                            <div key={`idea-${idea.id}`} className="relative pl-6 md:pl-8">
+                              <div className="absolute left-[-5px] top-1.5 w-2.5 h-2.5 rounded-full bg-primary ring-4 ring-background" />
+                              <div className="flex items-center gap-3 mb-2">
+                                <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-primary/10 text-primary uppercase tracking-wider">
+                                  {idea.source === "meeting" ? "Idea from Meeting" : "Project Idea"}
+                                </span>
+                                <span className="text-xs font-semibold text-muted-foreground">{dateStr}</span>
                               </div>
-                              <div className="w-full h-1 bg-muted rounded-full">
-                                <div className="h-1 bg-primary rounded-full transition-all" style={{ width: `${pct}%` }} />
+                              <div className="glass-card p-5 bg-surface">
+                                <p className="text-sm font-medium text-foreground/90 whitespace-pre-wrap leading-relaxed">{idea.text}</p>
+                                {itasks.length > 0 && (
+                                  <div className="mt-4 pt-3 border-t border-border/40">
+                                    <div className="flex items-center justify-between mb-1.5">
+                                      <span className="text-xs text-muted-foreground"><strong className="text-foreground/80">{done}</strong> of {itasks.length} tasks completed</span>
+                                      <span className="text-xs font-medium text-muted-foreground">{pct}%</span>
+                                    </div>
+                                    <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
+                                      <div className="h-full bg-primary transition-all rounded-full" style={{ width: `${pct}%` }} />
+                                    </div>
+                                  </div>
+                                )}
                               </div>
-                            </>
-                          )}
-                          {itasks.length === 0 && (
-                            <span className="text-[10px] text-muted-foreground mt-1 block">No tasks yet</span>
-                          )}
-                        </div>
-                      );
-                    } else {
-                      const { note } = entry;
-                      const preview = note.summary || note.raw_text.slice(0, 160);
-                      return (
-                        <div key={`note-${note.id}`}
-                          className="glass-card p-4 border-l-4 border-emerald-400/60 cursor-pointer hover:border-emerald-400 transition-colors"
-                          onClick={() => { setSelection({ kind: "note", id: note.id }); setActiveTab("ideas"); }}
-                        >
-                          <div className="flex items-center justify-between gap-3 mb-1">
-                            <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 flex items-center gap-1">
-                              <CalendarDays className="w-2.5 h-2.5" /> meeting note
-                            </span>
-                            <span className="text-[10px] text-muted-foreground">
-                              {entry.date.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}
-                            </span>
-                          </div>
-                          <p className="text-sm text-foreground/80 line-clamp-3 mt-1">{preview}{preview.length >= 160 ? "…" : ""}</p>
-                          {note.insights && (
-                            <span className="text-[10px] text-teal-600 mt-1 block">✓ Insights captured</span>
-                          )}
-                        </div>
-                      );
-                    }
-                  })}
+                            </div>
+                          );
+                        } else {
+                          const { note } = entry;
+                          return (
+                            <div key={`note-${note.id}`} className="relative pl-6 md:pl-8">
+                              <div className="absolute left-[-5px] top-1.5 w-2.5 h-2.5 rounded-full bg-emerald-500 ring-4 ring-background" />
+                              <div className="flex items-center gap-3 mb-2">
+                                <span className="text-[10px] font-medium px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-700 uppercase tracking-wider flex items-center gap-1">
+                                  <CalendarDays className="w-3 h-3" /> Meeting Note
+                                </span>
+                                <span className="text-xs font-semibold text-muted-foreground">{dateStr}</span>
+                              </div>
+                              <div className="glass-card p-5 bg-surface border-l-4 border-emerald-400/60">
+                                {note.summary ? (
+                                  <div>
+                                    <p className="text-[10px] font-semibold text-emerald-700 mb-1.5 uppercase tracking-widest">Summary</p>
+                                    <p className="text-sm text-foreground/80 leading-relaxed whitespace-pre-wrap">{note.summary}</p>
+                                  </div>
+                                ) : (
+                                  <p className="text-sm text-foreground/80 leading-relaxed whitespace-pre-wrap">{note.raw_text}</p>
+                                )}
+                                {note.insights && (
+                                  <div className="mt-4 pt-4 border-t border-border/40">
+                                    <MeetingInsightsPanel insights={note.insights} />
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        }
+                      })}
+                    </div>
+                  )}
                 </div>
               );
             })()}

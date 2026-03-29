@@ -1,114 +1,101 @@
-# 🚀 Autonomous Project Manager
+# Kairo Autonomous Project Management
 
-**AI-powered autonomous project coordination that transforms ideas into actionable plans with automatic team assignments and Slack notifications.**
-
-This system acts as an intelligent layer between project requests and your team, automatically breaking down complex goals into specific, skill-based tasks and assigning them to the right people.
+Kairo is a sophisticated, AI-driven project management platform designed to automate the transition from abstract ideas to structured execution. It functions as an intelligent coordination layer, utilizing Large Language Models to decompose project requests into actionable tasks, assign them based on team skill sets, and maintain a contextual narrative of project progress.
 
 ---
 
-<img width="1908" height="933" alt="Dashboard View" src="https://github.com/user-attachments/assets/825b140b-1aca-407a-bb43-c63413686796" />
-<img width="1906" height="943" alt="Task Generation" src="https://github.com/user-attachments/assets/d9f5a056-70c5-4ecc-88a8-e970ad8bd026" />
+## Core Capabilities
 
-## 🎯 Key Features
+### AI-Driven Task Decomposition
+The system analyzes natural language inputs to identify core objectives and automatically generates a logical breakdown of tasks. Each task is defined with estimated durations, required skill sets, and suggested priorities to ensure a coherent project flow.
 
-- **🤖 AI Task Decomposition**: Automatically analyzes natural language requests and breaks them down into 4-6 actionable, logical tasks.
-- **🧠 Smart Skill Matching**: Assigns tasks to team members based on their specific skill sets (e.g., assigning "API Design" to a Backend Engineer).
-- **⚡ Autonomous Coordination**: Handles the "Project Manager" role by estimating hours, setting dependencies, and determining urgency.
-- **💬 Slack Integration**: Instantly notifies the team via Slack when tasks are assigned.
-- **✨ Modern UI**: A beautiful, responsive interface built with React and Tailwind CSS for managing the workspace.
+### Intelligent Resource Allocation
+Using predefined team profiles, Kairo matches tasks to individual team members based on their specific technical expertise and current availability. This ensures that responsibilities are assigned to the most qualified personnel without manual oversite.
 
-## 🌟 New Features
+### Meeting Insights and Integration
+Kairo provides dedicated support for meeting processing. Users can input raw meeting notes, which the system then analyzes to extract structured data, including:
+- Key Decisions
+- Action Items
+- Identified Risks
+- Future Feature Ideas
+- Narrative Summaries
 
-- **🔗 LangChain/LangGraph Orchestration**: Replaced manual HTTP clients with LangChain OpenRouter client and introduced a LangGraph StateGraph (`workflow_app`) for robust routing, task decomposition, and assignment.
-- **💾 Project Data Model & Persistence**: Added `SQLModel`-based database layer with fallback to SQLite for Projects, Ideas, Tasks, Meeting Notes, and Project Events, along with REST endpoints.
-- **📊 Project Dashboard UI**: Introduced a new `/projects` route and `ProjectsDashboard` page matching the glass/neumorphic style to create projects, add ideas, manage tasks, and view project timelines.
-- **🛠️ Developer Ergonomics**: Added `start.ps1` and `start.sh` scripts to easily spin up the frontend and backend together, and updated dependencies to include LangChain/LangGraph and database requirements.
+### Project Digest and Contextual Narrative
+The Digest tab provides a high-level, chronological status report. It synthesizes project events, meeting outcomes, and idea status into a readable narrative, allowing stakeholders to quickly understand project velocity without reviewing individual task updates.
 
-## 🛠️ Tech Stack
+### Multidimensional Project Views
+The platform offers several ways to visualize project data, including:
+- Kanban Boards for workflow management.
+- Dynamic Calendars for deadline tracking.
+- Project Timelines for a granular log of system and user events.
+- Reports for performance and progress metrics.
 
-### Frontend
-- **Framework**: React (Vite)
-- **Styling**: Tailwind CSS, Shadcn UI
-- **Icons**: Lucide React
-- **State/Routing**: React Router, TanStack Query
+---
 
-### Backend
-- **API**: FastAPI (Python)
-- **AI/LLM**: OpenRouter (DeepSeek/Mistral models)
-- **Integration**: Slack SDK
-- **Server**: Uvicorn
 
-## 🚀 Getting Started
+## Technical Architecture
 
-Follow these steps to run the project locally.
+### Backend (FastAPI / Python)
+The backend is built as a modular REST API using FastAPI and SQLModel for robust data persistence.
+- **Agents and Graph**: Leverages LangGraph and OpenRouter for complex AI workflows, including multi-stage task decomposition and assignment logic.
+- **Service Layer**: Decoupled business logic for project management, slack integrations, and LLM orchestration.
+- **Database**: Primary persistence via SQLite (local) or PostgreSQL, managed with SQLModel for consistent schema definitions across the implementation.
 
-### Prerequisites
-- Python 3.8+
-- Node.js 16+
-- An OpenRouter API Key
-- A Slack Bot Token (optional, for notifications)
+### Frontend (React / Vite)
+The frontend is a high-performance Single Page Application (SPA).
+- **Authentication**: Integrated with Clerk for secure, enterprise-grade user management.
+- **State Management**: Uses TanStack Query (React Query) for efficient data fetching and synchronization with the backend.
+- **Styling**: Built with Vanilla CSS and Tailwind CSS, utilizing a custom design token system for consistent implementation of the Warm Linen aesthetic.
 
-### 1. Backend Setup
+---
 
-```bash
-cd backend
-
-# Create virtual environment
-python -m venv venv
-
-# Activate virtual environment
-# Windows:
-venv\Scripts\activate
-# Mac/Linux:
-# source venv/bin/activate
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Configure Environment
-# Create a .env file in /backend with:
-# OPENROUTER_API_KEY=your_key_here
-# SLACK_BOT_TOKEN=xoxb-your_token_here
-
-# Run Server
-python app.py
-```
-The backend will start on `http://localhost:8000`.
-
-### 2. Frontend Setup
-
-```bash
-cd frontend
-
-# Install dependencies
-npm install
-
-# Start Development Server
-npm run dev
-```
-The frontend will start on `http://localhost:3000`.
-
-## 📁 Project Structure
+## Project Structure
 
 ```text
 ProjectManager/
 ├── backend/
-│   ├── agents/           # AI Logic (Decomposer, Assigner)
-│   ├── config/           # Team profiles & constraints
-│   ├── app.py            # Main FastAPI application
-│   └── requirements.txt  # Python dependencies
+│   ├── agents/           # LLM agent logic and OpenRouter clients
+│   ├── core/             # Centralized configuration and authentication dependencies
+│   ├── graph/            # LangGraph workflow definitions for task generation
+│   ├── models/           # SQLModel schema definitions for the domain layer
+│   ├── services/         # Business logic (Slack, AI, project coordination)
+│   └── app.py            # Main FastAPI entry point and route definitions
 │
 └── frontend/
     ├── src/
-    │   ├── components/   # Reusable UI components
-    │   ├── pages/        # Home, Workspace, etc.
-    │   └── App.tsx       # Main entry point
-    └── package.json      # Node dependencies
+    │   ├── components/   # Modular UI components (Cards, Forms, Modals)
+    │   ├── pages/        # Route-level views (Workspace, Dashboard)
+    │   ├── hooks/        # Custom React hooks for data fetching and state
+    │   └── main.tsx      # Frontend entry point
 ```
 
-## 🎛️ How It Works
+---
 
-1.  **Input**: Enter a project idea (e.g., "Launch a new marketing campaign for Q4").
-2.  **Decomposition**: The AI analyzes the request and breaks it down into sub-tasks (Design, Copywriting, Analytics setup).
-3.  **Assignment**: It checks the `team_config.json` to find the best match for each task based on skills.
-4.  **Output**: A structured plan is generated, displayed on the UI, and sent to Slack.
+## Getting Started
+
+### Prerequisites
+- Python 3.8 or higher
+- Node.js 16 or higher
+- OpenRouter API Key
+- Clerk Frontend and Backend credentials
+
+### Backend Installation
+1. Navigate to the backend directory.
+2. Create and activate a virtual environment.
+3. Install dependencies: `pip install -r requirements.txt`
+4. Configure the `.env` file with required API keys.
+5. Launch the server: `python app.py`
+
+The backend interface will be accessible at `http://localhost:8000`.
+
+### Frontend Installation
+1. Navigate to the frontend directory.
+2. Install dependencies: `npm install`
+3. Launch the development server: `npm run dev`
+
+The application will be accessible at `http://localhost:3000`.
+
+---
+
+## Security and Authentication
+User authentication is managed via Clerk, ensuring that project data and workspace access are restricted to authorized personnel. Environment variables must be correctly configured in both the frontend and backend to facilitate secure JWT verification and user session management.

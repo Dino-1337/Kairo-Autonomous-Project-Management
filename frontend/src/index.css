@@ -1,180 +1,359 @@
+/* ─── Google Fonts ──────────────────────────────────────────────────────────── */
+@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Outfit:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+
+/* ─── Design System ─────────────────────────────────────────────────────────── */
+/* All colors in HSL. Warm Linen Studio theme.                                   */
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 220 15% 25%;
+    /* Backgrounds */
+    --background:    36 33% 97%;   /* warm cream #FAF8F4 */
+    --surface:       0 0% 100%;    /* pure white cards   */
+    --surface-alt:   36 20% 95%;   /* slightly warm cream for alt sections */
 
-    --card: 0 0% 100%;
-    --card-foreground: 220 15% 25%;
+    /* Foregrounds */
+    --foreground:       220 20% 12%;  /* near-black charcoal */
+    --card-foreground:  220 20% 12%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 220 15% 25%;
-
-    --primary: 217 85% 31%;
+    /* Primary — deep forest green */
+    --primary:          152 50% 20%;  /* hsl(152,50%,20%) */
+    --primary-light:    152 40% 93%;  /* very light green tint for hover bg */
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 174 100% 35%;
-    --secondary-foreground: 0 0% 100%;
-
-    --muted: 220 13% 95%;
-    --muted-foreground: 220 10% 50%;
-
-    --accent: 174 100% 35%;
+    /* Accent — terracotta */
+    --accent:           14 60% 55%;   /* hsl(14,60%,55%) warm rust */
+    --accent-light:     14 60% 95%;   /* very light terracotta tint */
     --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 84% 60%;
+    /* Semantic */
+    --card:             0 0% 100%;
+    --popover:          0 0% 100%;
+    --popover-foreground: 220 20% 12%;
+    --secondary:        36 20% 92%;
+    --secondary-foreground: 220 20% 12%;
+    --muted:            36 15% 93%;
+    --muted-foreground: 220 8% 48%;
+    --destructive:      0 78% 55%;
     --destructive-foreground: 0 0% 100%;
+    --border:           36 12% 78%;   /* slightly darker warm border */
+    --input:            0 0% 100%;    /* pure white input backgrounds */
+    --ring:             152 50% 20%;
 
-    --border: 220 13% 91%;
-    --input: 220 13% 91%;
-    --ring: 217 85% 31%;
+    /* Radius */
+    --radius: 0.75rem;
 
-    --radius: 1rem;
-
-    /* Glass effect variables */
-    --glass-bg: 0 0% 100%;
-    --glass-border: 0 0% 100%;
-    --glass-blur: 12px;
-    
-    /* Neumorphic shadows */
-    --neu-shadow-light: 0 0% 100%;
-    --neu-shadow-dark: 220 15% 88%;
-    
-    /* Animations */
-    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    --transition-reveal: all 0.36s cubic-bezier(0.22, 0.9, 0.35, 1);
-  }
-
-  .dark {
-    --background: 220 25% 8%;
-    --foreground: 0 0% 98%;
-
-    --card: 220 20% 12%;
-    --card-foreground: 0 0% 98%;
-
-    --popover: 220 20% 12%;
-    --popover-foreground: 0 0% 98%;
-
-    --primary: 217 85% 55%;
-    --primary-foreground: 0 0% 100%;
-
-    --secondary: 174 100% 45%;
-    --secondary-foreground: 0 0% 100%;
-
-    --muted: 220 20% 15%;
-    --muted-foreground: 220 10% 65%;
-
-    --accent: 174 100% 45%;
-    --accent-foreground: 0 0% 100%;
-
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
-
-    --border: 220 20% 20%;
-    --input: 220 20% 20%;
-    --ring: 217 85% 55%;
-    
-    --glass-bg: 220 20% 12%;
-    --glass-border: 220 20% 25%;
-    --neu-shadow-light: 220 20% 18%;
-    --neu-shadow-dark: 220 25% 5%;
+    /* Transitions */
+    --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+    --ease-spring: cubic-bezier(0.22, 0.9, 0.36, 1);
   }
 }
 
+/* ─── Base Styles ────────────────────────────────────────────────────────────── */
 @layer base {
   * {
     @apply border-border;
+    box-sizing: border-box;
+  }
+
+  html {
+    scroll-behavior: smooth;
   }
 
   body {
-    @apply bg-background text-foreground font-light;
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-family: 'Outfit', system-ui, sans-serif;
+    font-weight: 400;
     letter-spacing: -0.01em;
+    -webkit-font-smoothing: antialiased;
   }
-  
+
   h1, h2, h3, h4, h5, h6 {
-    @apply tracking-tight;
+    font-family: 'Syne', sans-serif;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+  }
+
+  code, kbd, .mono {
+    font-family: 'DM Mono', 'Fira Mono', monospace;
   }
 }
 
+/* ─── Component Classes ──────────────────────────────────────────────────────── */
 @layer components {
-  /* Glassmorphic card */
-  .glass-card {
-    background: hsla(var(--glass-bg) / 0.6);
-    backdrop-filter: blur(var(--glass-blur));
-    border: 1px solid hsla(var(--glass-border) / 0.08);
+
+  /* Kairo surface card — white with warm shadow */
+  .kairo-card {
+    background-color: hsl(var(--surface));
+    border: 1px solid hsl(var(--border));
     border-radius: var(--radius);
-    box-shadow: 0 8px 32px hsla(220 15% 10% / 0.05);
+    box-shadow:
+      0 1px 3px hsla(36 20% 10% / 0.04),
+      0 4px 16px hsla(36 20% 10% / 0.06);
+    transition: box-shadow 0.25s var(--ease-smooth), transform 0.25s var(--ease-smooth);
   }
-  
-  /* Neumorphic button */
-  .neu-button {
-    box-shadow: 
-      10px 10px 24px hsla(var(--neu-shadow-dark) / 0.08),
-      -6px -6px 18px hsla(var(--neu-shadow-light) / 0.95);
-    transition: var(--transition-smooth);
+
+  .kairo-card:hover {
+    box-shadow:
+      0 2px 6px hsla(36 20% 10% / 0.06),
+      0 8px 28px hsla(36 20% 10% / 0.1);
+    transform: translateY(-1px);
   }
-  
-  .neu-button:hover {
-    filter: drop-shadow(0 6px 20px hsla(var(--primary) / 0.12));
+
+  /* Green CTA button */
+  .kairo-btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1.5rem;
+    background-color: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+    font-family: 'Outfit', sans-serif;
+    font-weight: 500;
+    font-size: 0.9375rem;
+    border-radius: 999px;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s var(--ease-smooth),
+                box-shadow 0.2s var(--ease-smooth),
+                transform 0.15s var(--ease-smooth);
+    text-decoration: none;
   }
-  
-  .neu-button:active {
-    box-shadow: 
-      inset 4px 4px 8px hsla(var(--neu-shadow-dark) / 0.1),
-      inset -2px -2px 6px hsla(var(--neu-shadow-light) / 0.8);
+
+  .kairo-btn-primary:hover {
+    background-color: hsl(152 50% 16%);
+    box-shadow: 0 4px 18px hsla(var(--primary) / 0.35);
+    transform: translateY(-1px);
   }
-  
-  /* Animation utilities */
-  .animate-load {
-    animation: load 0.42s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+
+  .kairo-btn-primary:active {
+    transform: translateY(0);
+    box-shadow: none;
   }
-  
-  .animate-scroll-in {
-    animation: scroll-in 0.36s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+
+  /* Ghost button */
+  .kairo-btn-ghost {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1.25rem;
+    background-color: transparent;
+    color: hsl(var(--foreground));
+    font-family: 'Outfit', sans-serif;
+    font-weight: 400;
+    font-size: 0.9375rem;
+    border-radius: 999px;
+    border: 1.5px solid hsl(var(--border));
+    cursor: pointer;
+    transition: all 0.2s var(--ease-smooth);
+    text-decoration: none;
   }
-  
-  .animate-slide-reveal {
-    animation: slide-reveal 0.36s cubic-bezier(0.22, 0.9, 0.35, 1) forwards;
+
+  .kairo-btn-ghost:hover {
+    background-color: hsl(var(--muted));
+    border-color: hsl(var(--primary) / 0.3);
+    color: hsl(var(--primary));
   }
-  
-  @keyframes load {
-    from {
-      opacity: 0;
-      transform: translateY(10px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
+
+  /* Forest green accent border on cards — left side */
+  .kairo-card-active {
+    border-left: 3px solid hsl(var(--primary));
+    background-color: hsl(var(--primary-light));
   }
-  
-  @keyframes scroll-in {
-    from {
-      opacity: 0;
-      filter: blur(8px);
-    }
-    to {
-      opacity: 1;
-      filter: blur(0);
-    }
+
+  /* Terracotta badge */
+  .kairo-badge-accent {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.125rem 0.625rem;
+    background-color: hsl(var(--accent-light));
+    color: hsl(var(--accent));
+    font-family: 'DM Mono', monospace;
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    border-radius: 999px;
+    border: 1px solid hsl(var(--accent) / 0.2);
   }
-  
-  @keyframes slide-reveal {
-    from {
-      opacity: 0;
-      transform: translateX(20px);
-    }
-    to {
-      opacity: 1;
-      transform: translateX(0);
-    }
+
+  /* Green badge */
+  .kairo-badge-primary {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.125rem 0.625rem;
+    background-color: hsl(var(--primary-light));
+    color: hsl(var(--primary));
+    font-family: 'DM Mono', monospace;
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    border-radius: 999px;
+    border: 1px solid hsl(var(--primary) / 0.2);
   }
+
+  /* Icon container — terracotta tint */
+  .kairo-icon-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 3rem;
+    height: 3rem;
+    border-radius: 0.75rem;
+    background-color: hsl(var(--accent-light));
+    color: hsl(var(--accent));
+    flex-shrink: 0;
+  }
+
+  /* Gradient text — green */
+  .gradient-text {
+    background: linear-gradient(135deg, hsl(152 60% 22%), hsl(152 50% 35%));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  /* Mono label */
+  .mono-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.6875rem;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: hsl(var(--accent));
+  }
+
+  /* Section container — consistent max-width & padding */
+  .kairo-container {
+    width: 100%;
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+
+  /* Section heading block — always centered */
+  .section-heading {
+    text-align: center;
+    margin-bottom: 4rem;
+  }
+
+  .section-heading h2 {
+    font-size: clamp(2rem, 4vw, 2.75rem);
+    color: hsl(var(--foreground));
+    margin-bottom: 0.75rem;
+  }
+
+  .section-heading p {
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.0625rem;
+    color: hsl(var(--muted-foreground));
+    max-width: 520px;
+    margin: 0 auto;
+    line-height: 1.7;
+  }
+
+  /* Dot-grid texture overlay */
+  .dot-grid-bg {
+    background-image: radial-gradient(
+      circle,
+      hsl(152 20% 75% / 0.35) 1px,
+      transparent 1px
+    );
+    background-size: 28px 28px;
+  }
+}
+
+/* ─── Animations ─────────────────────────────────────────────────────────────── */
+@layer components {
+
+  /* Stagger reveal (page load) */
+  .reveal {
+    opacity: 0;
+    transform: translateY(16px);
+    animation: reveal-up 0.55s var(--ease-spring) forwards;
+  }
+
+  .reveal-1 { animation-delay: 0.05s; }
+  .reveal-2 { animation-delay: 0.15s; }
+  .reveal-3 { animation-delay: 0.25s; }
+  .reveal-4 { animation-delay: 0.35s; }
+  .reveal-5 { animation-delay: 0.45s; }
+
+  @keyframes reveal-up {
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Fade in */
+  .fade-in {
+    opacity: 0;
+    animation: fade 0.4s var(--ease-smooth) forwards;
+  }
+
+  @keyframes fade {
+    to { opacity: 1; }
+  }
+
+  /* Float (hero orbs) */
+  @keyframes float-slow {
+    0%, 100% { transform: translateY(0px) scale(1); }
+    50%       { transform: translateY(-18px) scale(1.02); }
+  }
+
+  @keyframes float-medium {
+    0%, 100% { transform: translateY(0px) scale(1); }
+    50%       { transform: translateY(12px) scale(0.98); }
+  }
+
+  .float-slow   { animation: float-slow 7s ease-in-out infinite; }
+  .float-medium { animation: float-medium 5s ease-in-out infinite; }
+
+  /* Shimmer for loading */
+  @keyframes shimmer {
+    0%   { background-position: -400px 0; }
+    100% { background-position: 400px 0; }
+  }
+
+  .shimmer {
+    background: linear-gradient(
+      90deg,
+      hsl(var(--muted)) 25%,
+      hsl(var(--surface)) 50%,
+      hsl(var(--muted)) 75%
+    );
+    background-size: 800px 100%;
+    animation: shimmer 1.6s infinite;
+  }
+
+  /* Slide in from top */
+  @keyframes slide-down {
+    from { opacity: 0; transform: translateY(-8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .slide-down {
+    animation: slide-down 0.3s var(--ease-spring) forwards;
+  }
+
+  /* Connector line fill */
+  @keyframes line-fill {
+    from { width: 0%; }
+    to   { width: 100%; }
+  }
+
+  /* Legacy compat */
+  .animate-load { animation: reveal-up 0.42s var(--ease-smooth) forwards; }
+  .animate-scroll-in { animation: reveal-up 0.36s var(--ease-smooth) forwards; }
+  .animate-slide-reveal { animation: slide-down 0.36s var(--ease-spring) forwards; }
+  .glass-card { @apply kairo-card; }
 }

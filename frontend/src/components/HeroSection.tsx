@@ -1,47 +1,207 @@
 import { Link } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import heroMockup from "@/assets/hero-mockup.jpg";
+import { ArrowRight } from "lucide-react";
 import { SignedIn, SignedOut } from "@clerk/clerk-react";
+import heroMockup from "@/assets/hero-mockup.jpg";
 
 const HeroSection = () => {
   return (
-    <section className="min-h-screen flex items-center justify-center px-6 pt-24 pb-16">
-      <div className="container mx-auto text-center">
-        <h1 className="text-5xl md:text-7xl font-light tracking-tight mb-6">
-          Project planning that
-          <br />
-          <span className="text-primary font-normal">actually gets work done.</span>
+    <section
+      style={{
+        minHeight: "100vh",
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        paddingTop: "96px",
+        paddingBottom: "80px",
+        position: "relative",
+        overflow: "hidden",
+        backgroundColor: "hsl(36, 33%, 97%)",
+      }}
+    >
+      {/* Dot grid background */}
+      <div
+        className="dot-grid-bg"
+        style={{
+          position: "absolute",
+          inset: 0,
+          pointerEvents: "none",
+          opacity: 0.6,
+        }}
+      />
+
+      {/* Soft background orbs — perfectly placed for depth */}
+      <div
+        className="float-slow"
+        style={{
+          position: "absolute",
+          top: "10%",
+          left: "8%",
+          width: "400px",
+          height: "400px",
+          borderRadius: "50%",
+          background:
+            "radial-gradient(circle, hsl(152 50% 40% / 0.08) 0%, transparent 70%)",
+          pointerEvents: "none",
+        }}
+      />
+      <div
+        className="float-medium"
+        style={{
+          position: "absolute",
+          bottom: "15%",
+          right: "8%",
+          width: "320px",
+          height: "320px",
+          borderRadius: "50%",
+          background:
+            "radial-gradient(circle, hsl(14 60% 55% / 0.07) 0%, transparent 70%)",
+          pointerEvents: "none",
+        }}
+      />
+
+      {/* Content — everything centered and stacked symmetrically */}
+      <div
+        className="kairo-container"
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+          textAlign: "center",
+          position: "relative",
+          zIndex: 1,
+          gap: 0,
+        }}
+      >
+        {/* Eyebrow label */}
+        <div className="reveal reveal-1">
+          <span className="mono-label" style={{ marginBottom: "1.5rem", display: "block" }}>
+            AI-Powered · Project Management
+          </span>
+        </div>
+
+        {/* Headline */}
+        <h1
+          className="reveal reveal-2"
+          style={{
+            fontFamily: "'Syne', sans-serif",
+            fontSize: "clamp(2.5rem, 6vw, 4.25rem)",
+            fontWeight: 800,
+            letterSpacing: "-0.04em",
+            lineHeight: 1.08,
+            color: "hsl(220, 20%, 12%)",
+            maxWidth: "820px",
+            marginBottom: "1.5rem",
+          }}
+        >
+          Project planning that{" "}
+          <span className="gradient-text">actually gets&nbsp;work done.</span>
         </h1>
 
-        <p className="text-lg md:text-xl text-foreground/70 max-w-2xl mx-auto mb-8">
-          Type what you need — our AI breaks it down, assigns it, and notifies your team instantly.
+        {/* Sub-headline */}
+        <p
+          className="reveal reveal-3"
+          style={{
+            fontFamily: "'Outfit', sans-serif",
+            fontSize: "1.125rem",
+            fontWeight: 400,
+            color: "hsl(220, 8%, 48%)",
+            maxWidth: "540px",
+            lineHeight: 1.7,
+            marginBottom: "2.5rem",
+          }}
+        >
+          Type what you need — our AI breaks it down, assigns it, and notifies
+          your team instantly.
         </p>
-        <SignedIn>
-          <Link to="/projects">
-            <Button
-              size="lg"
-              className="neu-button bg-primary text-primary-foreground hover:bg-primary/90 text-lg px-8 py-6 rounded-2xl"
-            >
-              Go to Dashboard
-            </Button>
-          </Link>
-        </SignedIn>
-        <SignedOut>
-          <Link to="/projects">
-            <Button
-              size="lg"
-              className="neu-button bg-primary text-primary-foreground hover:bg-primary/90 text-lg px-8 py-6 rounded-2xl"
-            >
-              Get Started
-            </Button>
-          </Link>
-        </SignedOut>
 
-        <div className="mt-16 relative">
+        {/* CTA Buttons — side by side, both centered */}
+        <div
+          className="reveal reveal-4"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "1rem",
+            marginBottom: "1.25rem",
+          }}
+        >
+          <SignedIn>
+            <Link
+              to="/projects"
+              className="kairo-btn-primary"
+              style={{ fontSize: "1rem", padding: "0.75rem 2rem" }}
+            >
+              Go to Dashboard <ArrowRight size={16} />
+            </Link>
+          </SignedIn>
+          <SignedOut>
+            <Link
+              to="/projects"
+              className="kairo-btn-primary"
+              style={{ fontSize: "1rem", padding: "0.75rem 2rem" }}
+            >
+              Get Started <ArrowRight size={16} />
+            </Link>
+            <a
+              href="#features"
+              onClick={(e) => {
+                e.preventDefault();
+                document.getElementById("features")?.scrollIntoView({ behavior: "smooth" });
+              }}
+              className="kairo-btn-ghost"
+              style={{ fontSize: "1rem", padding: "0.75rem 2rem" }}
+            >
+              See how it works
+            </a>
+          </SignedOut>
+        </div>
+
+        {/* Trust hint */}
+        <p
+          className="reveal reveal-4"
+          style={{
+            fontFamily: "'DM Mono', monospace",
+            fontSize: "0.75rem",
+            color: "hsl(220, 8%, 62%)",
+            marginBottom: "4rem",
+          }}
+        >
+          No credit card · Free to start
+        </p>
+
+        {/* Hero mockup — centered, floating */}
+        <div
+          className="reveal reveal-5"
+          style={{
+            width: "100%",
+            maxWidth: "920px",
+            position: "relative",
+          }}
+        >
+          {/* Soft shadow platform under the mockup */}
+          <div
+            style={{
+              position: "absolute",
+              bottom: "-24px",
+              left: "10%",
+              right: "10%",
+              height: "60px",
+              background: "radial-gradient(ellipse, hsl(152 30% 40% / 0.12) 0%, transparent 70%)",
+              pointerEvents: "none",
+            }}
+          />
           <img
             src={heroMockup}
-            alt="Project Manager Interface"
-            className="w-full max-w-5xl mx-auto rounded-3xl shadow-2xl glass-card"
+            alt="Kairo Project Manager Interface"
+            style={{
+              width: "100%",
+              borderRadius: "1.25rem",
+              border: "1px solid hsl(36, 15%, 87%)",
+              boxShadow:
+                "0 4px 24px hsla(36 20% 10% / 0.06), 0 24px 64px hsla(36 20% 10% / 0.1)",
+              display: "block",
+            }}
           />
         </div>
       </div>
