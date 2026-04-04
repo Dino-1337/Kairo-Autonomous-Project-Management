@@ -1,53 +1,58 @@
 # Kairo Autonomous Project Management
 
-Kairo is a sophisticated, AI-driven project management platform designed to automate the transition from abstract ideas to structured execution. It functions as an intelligent coordination layer, utilizing Large Language Models to decompose project requests into actionable tasks, assign them based on team skill sets, and maintain a contextual narrative of project progress.
+Kairo is an AI-driven project coordination layer. It automates the transition from abstract ideas to structured execution by decomposing project requests into actionable tasks and securely assigning them based on team skill sets.
 
----
+## Key Features
 
-## Core Capabilities
-
-### AI-Driven Task Decomposition
-The system analyzes natural language inputs to identify core objectives and automatically generates a logical breakdown of tasks. Each task is defined with estimated durations, required skill sets, and suggested priorities to ensure a coherent project flow.
-
-### Intelligent Resource Allocation
-Using predefined team profiles, Kairo matches tasks to individual team members based on their specific technical expertise and current availability. This ensures that responsibilities are assigned to the most qualified personnel without manual oversite.
-
-### Meeting Insights and Integration
-Kairo provides dedicated support for meeting processing. Users can input raw meeting notes, which the system then analyzes to extract structured data, including:
-- Key Decisions
-- Action Items
-- Identified Risks
-- Future Feature Ideas
-- Narrative Summaries
-
-### Project Digest and Contextual Narrative
-The Digest tab provides a high-level, chronological status report. It synthesizes project events, meeting outcomes, and idea status into a readable narrative, allowing stakeholders to quickly understand project velocity without reviewing individual task updates.
-
-### Multidimensional Project Views
-The platform offers several ways to visualize project data, including:
-- Kanban Boards for workflow management.
-- Dynamic Calendars for deadline tracking.
-- Project Timelines for a granular log of system and user events.
-- Reports for performance and progress metrics.
-
----
-
+- **AI Task Decomposition**: Breaks natural language inputs into logical, estimated tasks.
+- **Intelligent Routing**: Matches tasks to team members based on defined expertise and workloads.
+- **Meeting Insights**: Extracts decisions, risks, and action items directly from raw meeting notes.
+- **Automated Narratives**: Generates a high-level chronological digest of project velocity and status.
+- **Dynamic Views**: Offers Kanban, calendar, timeline, and reporting interfaces.
 
 ## Technical Architecture
 
-### Backend (FastAPI / Python)
-The backend is built as a modular REST API using FastAPI and SQLModel for robust data persistence.
-- **Agents and Graph**: Leverages LangGraph and OpenRouter for complex AI workflows, including multi-stage task decomposition and assignment logic.
-- **Service Layer**: Decoupled business logic for project management, slack integrations, and LLM orchestration.
-- **Database**: Primary persistence via SQLite (local) or PostgreSQL, managed with SQLModel for consistent schema definitions across the implementation.
+### Backend Agent Workflow
 
-### Frontend (React / Vite)
-The frontend is a high-performance Single Page Application (SPA).
-- **Authentication**: Integrated with Clerk for secure, enterprise-grade user management.
-- **State Management**: Uses TanStack Query (React Query) for efficient data fetching and synchronization with the backend.
-- **Styling**: Built with Vanilla CSS and Tailwind CSS, utilizing a custom design token system for consistent implementation of the Warm Linen aesthetic.
+```text
+React Frontend → POST /process-request
+               ↓
+          FastAPI (app.py)
+               ↓
+         MasterOrchestrator
+          (Identify Intent)
+               ↓
+       TaskDecompositionAgent
+          (OpenRouter/LLM)
+               ↓
+        AssignmentEngine
+      (Match Team Skills)
+               ↓
+    React Frontend (User Approves)
+               ↓
+React Frontend → POST /confirm-assignments
+               ↓
+          FastAPI (app.py)
+               ↓
+            SlackAgent
+        ↓ fan-out (parallel)
+    ┌──────────┴──────────┐
+    ↓                     ↓
+post_channel_msg      send_task_assignment
+(Project Channel)      (Direct Messages)
+```
 
----
+### Stack Overview
+
+**Backend**
+- Framework: FastAPI, SQLModel.
+- AI Logic: LangGraph, OpenRouter (DeepSeek/Mistral models).
+- Database: SQLite/PostgreSQL.
+
+**Frontend**
+- Framework: React (Vite), Tailwind CSS.
+- State Management: TanStack Query (React Query).
+- Auth: Clerk authentication.
 
 ## Project Structure
 
@@ -55,47 +60,36 @@ The frontend is a high-performance Single Page Application (SPA).
 ProjectManager/
 ├── backend/
 │   ├── agents/           # LLM agent logic and OpenRouter clients
-│   ├── core/             # Centralized configuration and authentication dependencies
+│   ├── core/             # Centralized configuration and authentication
 │   ├── graph/            # LangGraph workflow definitions for task generation
-│   ├── models/           # SQLModel schema definitions for the domain layer
+│   ├── models/           # SQLModel schema definitions
 │   ├── services/         # Business logic (Slack, AI, project coordination)
-│   └── app.py            # Main FastAPI entry point and route definitions
+│   └── app.py            # Main FastAPI entry point
 │
 └── frontend/
     ├── src/
-    │   ├── components/   # Modular UI components (Cards, Forms, Modals)
+    │   ├── components/   # Modular UI components
     │   ├── pages/        # Route-level views (Workspace, Dashboard)
-    │   ├── hooks/        # Custom React hooks for data fetching and state
+    │   ├── hooks/        # Custom React hooks
     │   └── main.tsx      # Frontend entry point
 ```
 
----
+## Quick Start
 
-## Getting Started
+**Prerequisites**: Python 3.8+, Node.js 16+, Clerk Credentials, OpenRouter API Key.
 
-### Prerequisites
-- Python 3.8 or higher
-- Node.js 16 or higher
-- OpenRouter API Key
-- Clerk Frontend and Backend credentials
-
-### Backend Installation
-1. Navigate to the backend directory.
+**Backend Setup**
+1. `cd backend`
 2. Create and activate a virtual environment.
-3. Install dependencies: `pip install -r requirements.txt`
-4. Configure the `.env` file with required API keys.
-5. Launch the server: `python app.py`
+3. `pip install -r requirements.txt`
+4. Add API keys to `.env` (OpenRouter, Clerk, Slack).
+5. Run `python app.py` (Starts at http://localhost:8000)
 
-The backend interface will be accessible at `http://localhost:8000`.
+**Frontend Setup**
+1. `cd frontend`
+2. `npm install`
+3. Run `npm run dev` (Starts at http://localhost:3000)
 
-### Frontend Installation
-1. Navigate to the frontend directory.
-2. Install dependencies: `npm install`
-3. Launch the development server: `npm run dev`
+## Security
 
-The application will be accessible at `http://localhost:3000`.
-
----
-
-## Security and Authentication
-User authentication is managed via Clerk, ensuring that project data and workspace access are restricted to authorized personnel. Environment variables must be correctly configured in both the frontend and backend to facilitate secure JWT verification and user session management.
+User authentication is managed via Clerk to secure workspace access and data. Ensure frontend and backend environments have the matching Clerk keys properly configured for JWT validation.
