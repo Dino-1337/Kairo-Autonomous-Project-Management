@@ -41,7 +41,7 @@ def _ensure_sqlite_meeting_insights_column() -> None:
 
 def init_db() -> None:
     """Create database tables if they don't exist."""
-    import project_models  # noqa: F401
+    from models import project_models  # noqa: F401
 
     SQLModel.metadata.create_all(engine)
     _ensure_sqlite_meeting_insights_column()

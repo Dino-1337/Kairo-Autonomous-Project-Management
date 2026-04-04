@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Sparkles, CheckCircle2, Clock, Users } from "lucide-react";
 import { SignedIn, SignedOut } from "@clerk/clerk-react";
 import heroMockup from "@/assets/hero-mockup.jpg";
 
@@ -7,12 +7,11 @@ const HeroSection = () => {
   return (
     <section
       style={{
-        minHeight: "100vh",
         display: "flex",
         flexDirection: "column",
         alignItems: "center",
-        justifyContent: "center",
-        paddingTop: "96px",
+        justifyContent: "flex-start",
+        paddingTop: "160px",
         paddingBottom: "80px",
         position: "relative",
         overflow: "hidden",
@@ -59,6 +58,64 @@ const HeroSection = () => {
           pointerEvents: "none",
         }}
       />
+
+      {/* Decorative Floating Elements (Using the whitespace) */}
+      <div 
+        className="hidden md:flex flex-col items-center gap-1.5 px-4 py-2 rounded-xl border border-white/40 shadow-sm"
+        style={{
+          position: "absolute",
+          top: "22%",
+          left: "8%",
+          transform: "rotate(-5deg)",
+          background: "linear-gradient(135deg, rgba(255,255,255,0.9), rgba(255,255,255,0.5))",
+          backdropFilter: "blur(8px)",
+          zIndex: 5,
+          animation: "float 6s ease-in-out infinite"
+        }}
+      >
+        <div className="flex items-center gap-2">
+          <Sparkles size={14} style={{ color: "hsl(152, 50%, 30%)" }} />
+          <span style={{ fontFamily: "'Syne', sans-serif", fontSize: "0.875rem", fontWeight: 700, color: "hsl(220, 20%, 20%)" }}>AI-Generated Tasks</span>
+        </div>
+      </div>
+
+      <div 
+        className="hidden lg:flex flex-col items-center gap-1.5 px-4 py-2.5 rounded-xl border border-white/60 shadow-sm"
+        style={{
+          position: "absolute",
+          top: "35%",
+          right: "10%",
+          transform: "rotate(4deg)",
+          background: "linear-gradient(135deg, rgba(255,255,255,0.95), rgba(255,255,255,0.6))",
+          backdropFilter: "blur(12px)",
+          zIndex: 5,
+          animation: "float 7s ease-in-out infinite 1s"
+        }}
+      >
+        <div className="flex items-center gap-2">
+          <CheckCircle2 size={15} style={{ color: "hsl(152, 60%, 35%)" }} />
+          <span style={{ fontFamily: "'Syne', sans-serif", fontSize: "0.875rem", fontWeight: 700, color: "hsl(220, 20%, 20%)" }}>Smart Assignment</span>
+        </div>
+      </div>
+
+      <div 
+        className="hidden md:flex flex-col items-center gap-1.5 px-4 py-2 rounded-xl border border-white/40 shadow-sm"
+        style={{
+          position: "absolute",
+          bottom: "35%",
+          left: "12%",
+          transform: "rotate(3deg)",
+          background: "linear-gradient(135deg, rgba(255,255,255,0.9), rgba(255,255,255,0.4))",
+          backdropFilter: "blur(8px)",
+          zIndex: 5,
+          animation: "float 8s ease-in-out infinite 0.5s"
+        }}
+      >
+        <div className="flex items-center gap-2">
+          <Clock size={14} style={{ color: "hsl(30, 80%, 45%)" }} />
+          <span style={{ fontFamily: "'Syne', sans-serif", fontSize: "0.8125rem", fontWeight: 700, color: "hsl(220, 20%, 20%)" }}>Saves 10h/week</span>
+        </div>
+      </div>
 
       {/* Content — everything centered and stacked symmetrically */}
       <div
@@ -164,7 +221,7 @@ const HeroSection = () => {
             fontFamily: "'DM Mono', monospace",
             fontSize: "0.75rem",
             color: "hsl(220, 8%, 62%)",
-            marginBottom: "4rem",
+            marginBottom: "3rem",
           }}
         >
           No credit card · Free to start

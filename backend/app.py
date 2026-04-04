@@ -15,10 +15,10 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from agents.slack_agent import SlackAgent
 from graph.workflow import run_idea_pipeline
-from idea_guardrails import validate_idea_text
+from services.idea_guardrails import validate_idea_text
 from agents.contextual_progress import extract_meeting_insights, generate_progress_summary
-from database import init_db, get_session
-from project_models import (
+from core.database import init_db, get_session
+from models.project_models import (
     Project, ProjectCreate, ProjectRead,
     Idea, IdeaCreate, IdeaRead,
     Task, TaskCreate, TaskRead, TaskUpdate,

@@ -1393,18 +1393,21 @@ const Workspace = () => {
                                 <span className="text-xs font-semibold text-muted-foreground">{dateStr}</span>
                               </div>
                               <div className="glass-card p-5 bg-surface border-l-4 border-emerald-400/60">
-                                {note.summary ? (
-                                  <div>
-                                    <p className="text-[10px] font-semibold text-emerald-700 mb-1.5 uppercase tracking-widest">Summary</p>
-                                    <p className="text-sm text-foreground/80 leading-relaxed whitespace-pre-wrap">{note.summary}</p>
-                                  </div>
+                                {note.insights && Object.values(note.insights).some((v: unknown) => Array.isArray(v) && v.length > 0) ? (
+                                  <MeetingInsightsPanel insights={note.insights} />
                                 ) : (
-                                  <p className="text-sm text-foreground/80 leading-relaxed whitespace-pre-wrap">{note.raw_text}</p>
-                                )}
-                                {note.insights && (
-                                  <div className="mt-4 pt-4 border-t border-border/40">
-                                    <MeetingInsightsPanel insights={note.insights} />
-                                  </div>
+                                  <>
+                                    {note.summary ? (
+                                      <div>
+                                        <p className="text-[10px] font-semibold text-emerald-700 mb-1.5 uppercase tracking-widest">Summary</p>
+                                        <p className="text-sm text-foreground/80 leading-relaxed whitespace-pre-wrap">{note.summary}</p>
+                                      </div>
+                                    ) : (
+                                      <p className="text-sm text-foreground/80 leading-relaxed whitespace-pre-wrap">
+                                        {note.raw_text.length > 300 ? note.raw_text.slice(0, 300) + "..." : note.raw_text}
+                                      </p>
+                                    )}
+                                  </>
                                 )}
                               </div>
                             </div>

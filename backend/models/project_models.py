@@ -23,13 +23,13 @@ class Project(ProjectBase, table=True):
     created_at: datetime = Field(default_factory=datetime.utcnow)
     updated_at: datetime = Field(default_factory=datetime.utcnow)
 
-    ideas: List["Idea"] = Relationship(back_populates="project")
-    tasks: List["Task"] = Relationship(back_populates="project")
-    meeting_notes: List["MeetingNote"] = Relationship(back_populates="project")
-    events: List["ProjectEvent"] = Relationship(back_populates="project")
-    sprints: List["Sprint"] = Relationship(back_populates="project")
-    milestones: List["Milestone"] = Relationship(back_populates="project")
-    comments: List["Comment"] = Relationship(back_populates="project")
+    ideas: List["Idea"] = Relationship(back_populates="project", sa_relationship_kwargs={"cascade": "all, delete-orphan"})
+    tasks: List["Task"] = Relationship(back_populates="project", sa_relationship_kwargs={"cascade": "all, delete-orphan"})
+    meeting_notes: List["MeetingNote"] = Relationship(back_populates="project", sa_relationship_kwargs={"cascade": "all, delete-orphan"})
+    events: List["ProjectEvent"] = Relationship(back_populates="project", sa_relationship_kwargs={"cascade": "all, delete-orphan"})
+    sprints: List["Sprint"] = Relationship(back_populates="project", sa_relationship_kwargs={"cascade": "all, delete-orphan"})
+    milestones: List["Milestone"] = Relationship(back_populates="project", sa_relationship_kwargs={"cascade": "all, delete-orphan"})
+    comments: List["Comment"] = Relationship(back_populates="project", sa_relationship_kwargs={"cascade": "all, delete-orphan"})
 
 
 class ProjectCreate(SQLModel):
@@ -119,8 +119,8 @@ class Idea(IdeaBase, table=True):
     created_at: datetime = Field(default_factory=datetime.utcnow)
 
     project: Optional["Project"] = Relationship(back_populates="ideas")
-    tasks: List["Task"] = Relationship(back_populates="idea")
-    comments: List["Comment"] = Relationship(back_populates="idea")
+    tasks: List["Task"] = Relationship(back_populates="idea", sa_relationship_kwargs={"cascade": "all, delete-orphan"})
+    comments: List["Comment"] = Relationship(back_populates="idea", sa_relationship_kwargs={"cascade": "all, delete-orphan"})
 
 
 class IdeaCreate(IdeaBase):
@@ -175,10 +175,10 @@ class Task(TaskBase, table=True):
     idea: Optional["Idea"] = Relationship(back_populates="tasks")
     sprint: Optional["Sprint"] = Relationship(back_populates="tasks")
     milestone: Optional["Milestone"] = Relationship(back_populates="tasks")
-    subtasks: List["Subtask"] = Relationship(back_populates="task")
-    attachments: List["TaskAttachment"] = Relationship(back_populates="task")
-    history: List["TaskHistory"] = Relationship(back_populates="task")
-    comments: List["Comment"] = Relationship(back_populates="task")
+    subtasks: List["Subtask"] = Relationship(back_populates="task", sa_relationship_kwargs={"cascade": "all, delete-orphan"})
+    attachments: List["TaskAttachment"] = Relationship(back_populates="task", sa_relationship_kwargs={"cascade": "all, delete-orphan"})
+    history: List["TaskHistory"] = Relationship(back_populates="task", sa_relationship_kwargs={"cascade": "all, delete-orphan"})
+    comments: List["Comment"] = Relationship(back_populates="task", sa_relationship_kwargs={"cascade": "all, delete-orphan"})
 
 
 class TaskCreate(TaskBase):

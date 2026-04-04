@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { ExternalLink, FolderOpen, Plus, Sparkles, Trash2, Calendar } from "lucide-react";
+import { ExternalLink, FolderOpen, Plus, Sparkles, Trash2, Calendar, Pencil } from "lucide-react";
 import { useAuth } from "@clerk/clerk-react";
 
 type ProjectStatus = "active" | "paused" | "completed";
@@ -33,6 +33,8 @@ const ProjectsDashboard = () => {
   const [isCreatingProject, setIsCreatingProject] = useState(false);
   const [newProjectName, setNewProjectName] = useState("");
   const [newProjectDescription, setNewProjectDescription] = useState("");
+  const [editingProjectId, setEditingProjectId] = useState<number | null>(null);
+  const [editingProjectName, setEditingProjectName] = useState("");
 
   useEffect(() => {
     const loadProjects = async () => {
@@ -79,8 +81,43 @@ const ProjectsDashboard = () => {
   const handleDeleteProject = async (id: number, e: React.MouseEvent) => {
     e.stopPropagation();
     if (!window.confirm("Delete this project?")) return;
-    setProjects((prev) => prev.filter((p) => p.id !== id));
-    toast.success("Project removed");
+
+    try {
+      const token = await getToken();
+      const res = await fetch(`${API_BASE}/projects/${id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error();
+      setProjects((prev) => prev.filter((p) => p.id !== id));
+      toast.success("Project removed");
+    } catch {
+      toast.error("Could not delete project");
+    }
+  };
+
+  const handleUpdateProjectName = async (id: number, e?: React.MouseEvent | React.KeyboardEvent) => {
+    if (e) e.stopPropagation();
+    if (!editingProjectName.trim()) {
+      setEditingProjectId(null);
+      return;
+    }
+    try {
+      const token = await getToken();
+      const res = await fetch(`${API_BASE}/projects/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ name: editingProjectName }),
+      });
+      if (!res.ok) throw new Error();
+      const updatedProject = await res.json();
+      setProjects((prev) => prev.map((p) => (p.id === id ? { ...p, name: updatedProject.name } : p)));
+      toast.success("Project updated");
+    } catch {
+      toast.error("Could not update project name");
+    } finally {
+      setEditingProjectId(null);
+    }
   };
 
   return (
@@ -348,36 +385,76 @@ const ProjectsDashboard = () => {
                   {/* Left content */}
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: "0.625rem", marginBottom: "0.375rem" }}>
-                      <span
-                        style={{
-                          fontFamily: "'Syne', sans-serif",
-                          fontSize: "1rem",
-                          fontWeight: 700,
-                          color: "hsl(220, 20%, 12%)",
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                          whiteSpace: "nowrap",
-                        }}
-                      >
-                        {project.name}
-                      </span>
-                      <span
-                        style={{
-                          fontFamily: "'DM Mono', monospace",
-                          fontSize: "0.625rem",
-                          fontWeight: 500,
-                          letterSpacing: "0.06em",
-                          textTransform: "uppercase",
-                          padding: "0.125rem 0.5rem",
-                          borderRadius: "999px",
-                          backgroundColor: badge.bg,
-                          color: badge.text,
-                          border: `1px solid ${badge.border}`,
-                          flexShrink: 0,
-                        }}
-                      >
-                        {project.status}
-                      </span>
+                      {editingProjectId === project.id ? (
+                        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                          <Input
+                            value={editingProjectName}
+                            onChange={(e) => setEditingProjectName(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === "Enter") handleUpdateProjectName(project.id, e);
+                              if (e.key === "Escape") setEditingProjectId(null);
+                            }}
+                            onClick={(e) => e.stopPropagation()}
+                            autoFocus
+                            style={{ height: "28px", fontSize: "0.875rem", fontFamily: "'Syne', sans-serif", width: "200px" }}
+                          />
+                          <button
+                            onClick={(e) => handleUpdateProjectName(project.id, e)}
+                            className="kairo-btn-primary"
+                            style={{ padding: "0.25rem 0.6rem", fontSize: "0.75rem", height: "28px" }}
+                          >
+                            Save
+                          </button>
+                        </div>
+                      ) : (
+                        <span
+                          style={{
+                            fontFamily: "'Syne', sans-serif",
+                            fontSize: "1rem",
+                            fontWeight: 700,
+                            color: "hsl(220, 20%, 12%)",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "nowrap",
+                          }}
+                        >
+                          {project.name}
+                        </span>
+                      )}
+                      
+                      {editingProjectId !== project.id && (
+                        <>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setEditingProjectId(project.id);
+                              setEditingProjectName(project.name);
+                            }}
+                            style={{ background: "none", border: "none", cursor: "pointer", color: "hsl(220, 8%, 65%)", padding: "2px" }}
+                            onMouseEnter={(e) => e.currentTarget.style.color = "hsl(220, 20%, 30%)"}
+                            onMouseLeave={(e) => e.currentTarget.style.color = "hsl(220, 8%, 65%)"}
+                          >
+                            <Pencil size={12} strokeWidth={2} />
+                          </button>
+                          <span
+                            style={{
+                              fontFamily: "'DM Mono', monospace",
+                              fontSize: "0.625rem",
+                              fontWeight: 500,
+                              letterSpacing: "0.06em",
+                              textTransform: "uppercase",
+                              padding: "0.125rem 0.5rem",
+                              borderRadius: "999px",
+                              backgroundColor: badge.bg,
+                              color: badge.text,
+                              border: `1px solid ${badge.border}`,
+                              flexShrink: 0,
+                            }}
+                          >
+                            {project.status}
+                          </span>
+                        </>
+                      )}
                     </div>
 
                     {project.description && (
