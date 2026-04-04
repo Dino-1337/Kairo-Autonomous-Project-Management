@@ -10,6 +10,8 @@ Kairo is an AI-driven project coordination layer. It automates the transition fr
 - **Automated Narratives**: Generates a high-level chronological digest of project velocity and status.
 - **Dynamic Views**: Offers Kanban, calendar, timeline, and reporting interfaces.
 
+<img width="1903" height="951" alt="image" src="https://github.com/user-attachments/assets/ac361935-b07d-42f5-ab91-15ffc67cac09" />
+
 ## Technical Architecture
 
 ### Backend Agent Workflow
