@@ -7,14 +7,14 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 try:
     from config.settings import settings
-    print("✅ Successfully imported settings for assignment engine")
+    print(" Successfully imported settings for assignment engine")
 except ImportError as e:
-    print(f"❌ Import error: {e}")
+    print(f" Import error: {e}")
 
 class AssignmentEngine:
     def __init__(self):
         self.team_config = self.load_team_config()
-        print(f"👥 Assignment Engine initialized with {len(self.team_config)} team members")
+        print(f" Assignment Engine initialized with {len(self.team_config)} team members")
     
     def load_team_config(self):
         """Load team configuration from JSON file"""
@@ -23,10 +23,10 @@ class AssignmentEngine:
             config_path = os.path.join(os.path.dirname(__file__), '..', 'config', 'team_config.json')
             with open(config_path, 'r') as f:
                 team_data = json.load(f)
-                print(f"✅ Loaded team config from {config_path}")
+                print(f" Loaded team config from {config_path}")
                 return team_data
         except Exception as e:
-            print(f"❌ Failed to load team config: {e}")
+            print(f" Failed to load team config: {e}")
             # Fallback to basic team
             return [
                 {"name": "Pravakar", "skills": ["project management", "frontend", "backend"], "slack_id": "U09SR30T58W"},
@@ -36,7 +36,7 @@ class AssignmentEngine:
     
     def assign_tasks(self, tasks, user_request: str = ""):
         """Assign all tasks to team members"""
-        print(f"🎯 Starting task assignment for {len(tasks)} tasks...")
+        print(f" Starting task assignment for {len(tasks)} tasks...")
         
         # Check for specific assignment instructions
         specific_assignments = self.extract_specific_assignments(user_request) if user_request else {}
@@ -56,7 +56,7 @@ class AssignmentEngine:
                         # Find team member by name
                         assignee = next((m for m in self.team_config if m['name'].lower() == name.lower()), None)
                         if assignee:
-                            print(f"   🎯 Specific assignment: {task['title']} -> {assignee['name']}")
+                            print(f"    Specific assignment: {task['title']} -> {assignee['name']}")
                             break
             
             # If no specific assignment, use skill-based matching
@@ -74,7 +74,7 @@ class AssignmentEngine:
             }
             
             assignments.append(assignment_detail)
-            print(f"   ✅ Task {task['id']} '{task['title']}' assigned to {assignee['name']}")
+            print(f"    Task {task['id']} '{task['title']}' assigned to {assignee['name']}")
         
         return {
             'status': 'success',
@@ -108,7 +108,7 @@ class AssignmentEngine:
             if any(pattern in request_lower for pattern in patterns):
                 # Extract keywords around the name for task matching
                 assignments[name] = [name_lower, "logo", "design", "ui", "frontend", "backend", "copy", "write"]
-                print(f"   🎯 Found specific assignment instruction for {name}")
+                print(f"    Found specific assignment instruction for {name}")
         
         return assignments
     
@@ -117,7 +117,7 @@ class AssignmentEngine:
         required_skills = task.get('skills_required', [])
         task_id = task['id']
         
-        print(f"🔍 Finding assignee for task {task_id}: {task['title']}")
+        print(f" Finding assignee for task {task_id}: {task['title']}")
         print(f"   Required skills: {required_skills}")
         
         best_match = None
@@ -142,16 +142,16 @@ class AssignmentEngine:
                 best_match = member
         
         if best_match:
-            print(f"   ✅ Best match: {best_match['name']} (score: {best_score})")
+            print(f"    Best match: {best_match['name']} (score: {best_score})")
             return best_match
         else:
-            print(f"   ⚠️  No strong match found, using fallback")
+            print(f"   ️  No strong match found, using fallback")
             # Fallback to first member
             return self.team_config[0]
 
 # Test the assignment engine
 if __name__ == "__main__":
-    print("🧪 Testing Assignment Engine...")
+    print(" Testing Assignment Engine...")
     engine = AssignmentEngine()
     
     # Sample tasks from our decomposition
@@ -175,4 +175,4 @@ if __name__ == "__main__":
     ]
     
     result = engine.assign_tasks(sample_tasks, "Create a landing page and assign to Dino")
-    print(f"\n🎯 Assignment Result: {json.dumps(result, indent=2)}")
+    print(f"\n Assignment Result: {json.dumps(result, indent=2)}")
